@@ -7,6 +7,31 @@ import {useState} from 'react';
 
 let global = varaible();
 
+class Stack {
+  constructor() {
+      this.data = [];
+  }
+  push(data) {
+      this.data.reverse();
+      this.data.push(data);
+      this.data.reverse();
+  }
+  pop() {
+      if (this.data.length == 0) return null;
+      let curr = this.data[0];
+      this.data.reverse();
+      this.data.pop();
+      this.data.reverse();
+      return curr;
+  }
+  print() {
+      console.log(...this.data);
+  }
+}
+
+let stack = new Stack();
+global.stack = stack;
+
 export default function ToolBox() {
   
   useEffect(() => {
@@ -25,9 +50,23 @@ export default function ToolBox() {
     global.draw = 'DRAW';
   }
 
+  
+
+ 
+  function undo(){
+    let curr = global.drawing.pop();
+    global.stack.push(curr);
+    redrawCanvas();
+  }
+ 
+  function redo(){
+    let curr = global.stack.pop();
+    if(curr != null) global.drawing.push(curr);
+    redrawCanvas();
+  }
+ 
 
   function pan(){
-    console.log("PAN");
     global.draw = 'PAN';
   }
 
@@ -62,7 +101,6 @@ function loadBoard(){
       global.drawing = parsedJSON;
       redrawCanvas();                 
   }
-  console.log(document.querySelector('.file').files[0]);
   fileReader.readAsText(document.querySelector('.file').files[0]);
 }
 
@@ -101,6 +139,16 @@ function saveImage(){
     <div  className="btn-group-vertical" role="group" aria-label="Vertical button group">
   <button onClick={draw} id="drawBtn" type="button" className="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil" viewBox="0 0 16 16">
   <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+</svg></button>
+
+<button onClick={undo} id="drawBtn" type="button" className="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+  <path fillRule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+  <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+</svg></button>
+
+<button onClick={redo} id="drawBtn" type="button" className="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+  <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+  <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
 </svg></button>
 
 <button onClick={pan}  id="PanBtn" type="button" className="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-hand-index" viewBox="0 0 16 16">

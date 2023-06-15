@@ -3,7 +3,7 @@ import './Board.css'
 import varaible from '../Compoenets/variable';
 
 let global = varaible();
-
+let currState = [];
 export function redrawCanvas() {
     global.canvas.width = document.body.clientWidth;
     global.canvas.height = document.body.clientHeight;
@@ -11,8 +11,10 @@ export function redrawCanvas() {
     context.fillStyle = "#1f1f1f";
     context.fillRect(0, 0, global.canvas.width, global.canvas.height);
     for (let i = 0; i < global.drawing.length; i++) {
-        const line = global.drawing[i];
-        drawline(toscreenX(line.x0), toscreenY(line.y0), toscreenX(line.x1), toscreenY(line.y1),global.drawing[i].strokeStyle,global.drawing[i].lineWidth)
+        for(let j = 0; j < global.drawing[i].data.length ; j++){
+        const line = global.drawing[i].data[j];
+        drawline(toscreenX(line.x0), toscreenY(line.y0), toscreenX(line.x1), toscreenY(line.y1),global.drawing[i].data[j].strokeStyle,global.drawing[i].data[j].lineWidth)
+        }
     }
 }
 
@@ -88,6 +90,8 @@ export default function Board() {
         let rightMouseDown = false;
 
         function mouseDown(e) {
+            
+            e.preventDefault()
 
             if (e.button === 0) {
                 leftmouseDown = true;
@@ -103,11 +107,15 @@ export default function Board() {
             global.cursorY = e.pageY;
             global.prevcursorX = e.pageX;
             global.prevcursorY = e.pageY;
+            if(global.draw === 'DRAW') global.state++;
+            console.log(global.state);
         }
 
         function mouseUp() {
             leftmouseDown = false;
             rightMouseDown = false;
+            if(global.draw === 'DRAW')global.drawing.push({state:global.state,data:currState});
+            currState = [];
         }
 
         function mouseMove(e) {
@@ -121,13 +129,13 @@ export default function Board() {
                 const prevscaledx = totrueX(global.prevcursorX);
                 const prevscaledy = totrueY(global.prevcursorY);
                 if (global.draw === 'DRAW') {
-                    global.drawing.push({
-                        x0: prevscaledx,
-                        y0: prevscaledy,
-                        x1: scaledx,
-                        y1: scaledy,
-                        strokeStyle:global.strokeStyle,
-                        lineWidth:global.strokeWidth,
+                    currState.push({
+                          x0: prevscaledx,
+                          y0: prevscaledy,
+                          x1: scaledx,
+                          y1: scaledy,
+                          strokeStyle:global.strokeStyle,
+                          lineWidth:global.strokeWidth,
                     })
 
                     drawline(global.prevcursorX, global.prevcursorY, global.cursorX, global.cursorY,global.strokeStyle,global.strokeWidth);
@@ -194,6 +202,8 @@ export default function Board() {
         function touchEnd(e) {
             singleTouche = false;
             doubleTouche = false;
+            if(global.draw === 'DRAW')global.drawing.push({state:global.state,data:currState});
+            currState = [];
         }
 
         function touchMove(e) {
@@ -209,7 +219,7 @@ export default function Board() {
 
             if (singleTouche) {
                 if(global.draw === 'DRAW'){
-                global.drawing.push({
+                    currState.push({
                     x0: prevscaledx,
                     y0: prevscaledy,
                     x1: scaledx,
