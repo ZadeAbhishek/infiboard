@@ -4,6 +4,12 @@ import varaible from '../Compoenets/variable';
 
 let global = varaible();
 let currState = [];
+let singleTouche = false;
+let doubleTouche = false;
+let leftmouseDown = false;
+let rightMouseDown = false;
+
+
 export function redrawCanvas() {
     global.canvas.width = document.body.clientWidth;
     global.canvas.height = document.body.clientHeight;
@@ -57,42 +63,9 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
 
 
 
-export default function Board() {
-
-    useEffect(() => {
-
-        global.canvas = document.getElementById("board");
-        
-        //disable right click
-        document.oncontextmenu = function() {
-            return false;
-        }
-
-        redrawCanvas();
-
-        window.addEventListener("resize", (e) => {
-            redrawCanvas();
-        });
-
-        global.canvas.addEventListener('mousedown', mouseDown);
-        global.canvas.addEventListener('mouseup', mouseUp, false);
-        global.canvas.addEventListener('mousemove', mouseMove, false);
-        global.canvas.addEventListener('wheel', mouseWheel, false);
-
-        global.canvas.addEventListener('touchstart', touchStart);
-        global.canvas.addEventListener('touchend', touchEnd);
-        global.canvas.addEventListener('touchmove', touchMove);
-      }, []);
-
-
-        let leftmouseDown = false;
-         // eslint-disable-next-line
-        let rightMouseDown = false;
-
         function mouseDown(e) {
             
-            e.preventDefault()
-
+            e.preventDefault();
             if (e.button === 0) {
                 leftmouseDown = true;
                 rightMouseDown = false;
@@ -107,14 +80,15 @@ export default function Board() {
             global.cursorY = e.pageY;
             global.prevcursorX = e.pageX;
             global.prevcursorY = e.pageY;
-            if(global.draw === 'DRAW') global.state++;
-            console.log(global.state);
         }
 
         function mouseUp() {
             leftmouseDown = false;
             rightMouseDown = false;
-            if(global.draw === 'DRAW')global.drawing.push({state:global.state,data:currState});
+            if(global.draw === 'DRAW' && currState.length > 0){ 
+                global.state++;
+                global.drawing.push({state:global.state,data:currState});
+            }    
             currState = [];
         }
 
@@ -140,13 +114,13 @@ export default function Board() {
 
                     drawline(global.prevcursorX, global.prevcursorY, global.cursorX, global.cursorY,global.strokeStyle,global.strokeWidth);
                 }
-
                 if (global.draw === 'PAN') {
                     global.offsetX += (global.cursorX - global.prevcursorX) / global.scale;
                     global.offsetY += (global.cursorY - global.prevcursorY) / global.scale;
                     redrawCanvas();
                 }
             }
+
             global.prevcursorX = global.cursorX;
             global.prevcursorY = global.cursorY;
 
@@ -177,12 +151,10 @@ export default function Board() {
 
 
             redrawCanvas();
-        }
+    }
 
-       
 
-        let singleTouche = false;
-        let doubleTouche = false;
+    
 
         function touchStart(e) {
             if (e.touches.length === 1) {
@@ -292,9 +264,33 @@ export default function Board() {
             global.prevTouches[1] = e.touches[1];
         }
 
+export default function Board() {
 
+    useEffect(() => {
 
+        global.canvas = document.getElementById("board");
+        
+        //disable right click
+        document.oncontextmenu = function() {
+            return false;
+        }
 
-    return ( <canvas id = "board" > Board </canvas>
+        redrawCanvas();
+
+        window.addEventListener("resize", (e) => {
+            redrawCanvas();
+        });
+
+        global.canvas.addEventListener('mousedown', mouseDown);
+        global.canvas.addEventListener('mouseup', mouseUp, false);
+        global.canvas.addEventListener('mousemove', mouseMove, false);
+        global.canvas.addEventListener('wheel', mouseWheel, false);
+
+        global.canvas.addEventListener('touchstart', touchStart);
+        global.canvas.addEventListener('touchend', touchEnd);
+        global.canvas.addEventListener('touchmove', touchMove);
+      }, []);
+
+   return ( <canvas id = "board" > Board </canvas>
     )
 }

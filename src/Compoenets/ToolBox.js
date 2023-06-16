@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react'
 import './ToolBox.css'
 import varaible from './variable';
 import { redrawCanvas } from '../Board/Board';
@@ -7,60 +6,24 @@ import {useState} from 'react';
 
 let global = varaible();
 
-class Stack {
-  constructor() {
-      this.data = [];
-  }
-  push(data) {
-      this.data.reverse();
-      this.data.push(data);
-      this.data.reverse();
-  }
-  pop() {
-      if (this.data.length == 0) return null;
-      let curr = this.data[0];
-      this.data.reverse();
-      this.data.pop();
-      this.data.reverse();
-      return curr;
-  }
-  print() {
-      console.log(...this.data);
-  }
-}
-
-let stack = new Stack();
-global.stack = stack;
 
 export default function ToolBox() {
   
-  useEffect(() => {
-
-    // document.querySelector('.sbm').addEventListener('click',loadBoard);
-    // document.getElementById('drawBtn').addEventListener('mousedown',draw);
-    // document.getElementById('drawBtn').addEventListener('touchstart',draw);
-
-  }, []);
-
-
-  
-  
-
   function draw(){
     global.draw = 'DRAW';
   }
 
-  
-
- 
   function undo(){
     let curr = global.drawing.pop();
+    global.state--;
     global.stack.push(curr);
     redrawCanvas();
   }
  
   function redo(){
     let curr = global.stack.pop();
+    if(curr === null) return;
+    global.state++;
     if(curr != null) global.drawing.push(curr);
     redrawCanvas();
   }

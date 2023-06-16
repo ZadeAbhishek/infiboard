@@ -1,3 +1,25 @@
+class Stack {
+    constructor() {
+        this.data = [];
+    }
+    push(data) {
+        this.data.reverse();
+        this.data.push(data);
+        this.data.reverse();
+    }
+    pop() {
+        if (this.data.length === 0) return null;
+        let curr = this.data[0];
+        this.data.reverse();
+        this.data.pop();
+        this.data.reverse();
+        return curr;
+    }
+    print() {
+        console.log(...this.data);
+    }
+}
+
 let states = {
     projectName: 'untitled',
     draw: 'HOLD',
@@ -24,34 +46,11 @@ let states = {
     strokeWidth: 2,
     boardColor: "#1f1f1f",
     state: 0,
-    stack: null,
+    stack: new Stack(),
 
 
 }
 
 export default function varaible() {
     return states;
-}
-
-
-class Stack {
-    constructor() {
-        this.data = [];
-    }
-    push(data) {
-        this.data.reverse();
-        this.data.push(data);
-        this.data.reverse();
-    }
-    pop() {
-        if (this.data.length == 0) return null;
-        let curr = this.data[0];
-        this.data.reverse();
-        this.data.pop();
-        this.data.reverse();
-        return curr;
-    }
-    print() {
-        console.log(...this.data);
-    }
 }
