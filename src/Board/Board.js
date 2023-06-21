@@ -64,7 +64,6 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
 
 
         function mouseDown(e) {
-            
             e.preventDefault();
             if (e.button === 0) {
                 leftmouseDown = true;
@@ -93,11 +92,10 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
         }
 
         function mouseMove(e) {
-
             if (leftmouseDown) {
                 global.cursorX = e.pageX;
                 global.cursorY = e.pageY;
-
+                
                 const scaledx = totrueX(global.cursorX);
                 const scaledy = totrueY(global.cursorY);
                 const prevscaledx = totrueX(global.prevcursorX);
@@ -285,12 +283,14 @@ export default function Board() {
         global.canvas.addEventListener('mouseup', mouseUp, false);
         global.canvas.addEventListener('mousemove', mouseMove, false);
         global.canvas.addEventListener('wheel', mouseWheel, false);
-
+        global.canvas.style.cursor = "url('https://img.icons8.com/FFFFFF/external-those-icons-lineal-color-those-icons/24/FF0C0C/external-cursor-selection-cursors-those-icons-lineal-color-those-icons-1.png'), auto"
         global.canvas.addEventListener('touchstart', touchStart);
         global.canvas.addEventListener('touchend', touchEnd);
         global.canvas.addEventListener('touchmove', touchMove);
       }, []);
 
-   return ( <canvas id = "board" > Board </canvas>
+   return ( <>
+    <canvas id = "board" > Board </canvas>
+    </> 
     )
 }
