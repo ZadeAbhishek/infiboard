@@ -8,6 +8,7 @@ let singleTouche = false;
 let doubleTouche = false;
 let leftmouseDown = false;
 let rightMouseDown = false;
+let tempstate = "HOLD";
 
 
 export function redrawCanvas() {
@@ -19,9 +20,25 @@ export function redrawCanvas() {
     for (let i = 0; i < global.drawing.length; i++) {
         for(let j = 0; j < global.drawing[i].data.length ; j++){
         const line = global.drawing[i].data[j];
-        drawline(toscreenX(line.x0), toscreenY(line.y0), toscreenX(line.x1), toscreenY(line.y1),global.drawing[i].data[j].strokeStyle,global.drawing[i].data[j].lineWidth)
+        drawline(toscreenX(line.x0), toscreenY(line.y0), toscreenX(line.x1), toscreenY(line.y1),global.drawing[i].data[j].strokeStyle,global.drawing[i].data[j].lineWidth*global.scale)
         }
     }
+    
+  for(let shape of global.shapes){
+    context.beginPath();
+    context.fillStyle = "red";
+    context.fillRect(toscreenX(shape.x), toscreenY(shape.y), currWidth(shape.width), currHeight(shape.height));
+    context.strokeRect(toscreenX(shape.x), toscreenY(shape.y), currWidth(shape.width), currHeight(shape.height));
+    context.clearRect(toscreenX(shape.x), toscreenY(shape.y), currWidth(shape.width),currHeight(shape.height));
+    }
+
+    if(global.draw === 'SQUARE'){
+        context.beginPath();
+        context.fillStyle = "red";
+        context.fillRect(global.downX, global.downY, global.shapeX - global.downX, global.shapeY - global.downY);
+        context.strokeRect(global.downX, global.downY, global.shapeX - global.downX, global.shapeY - global.downY);
+        context.clearRect(global.downX, global.downY, global.shapeX - global.downX, global.shapeY - global.downY);
+   } 
 }
 
 function toscreenX(xTrue) {
@@ -42,6 +59,14 @@ function totrueY(yscreen) {
     return (yscreen / global.scale) - global.offsetY;
 }
 
+function currHeight(height){
+  return height * global.scale;
+}
+
+function currWidth(Width){
+    return Width * global.scale;
+  }
+
 function trueHeight() {
     return global.canvas.clientHeight / global.scale;
 }
@@ -61,10 +86,20 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
     context.stroke();
 }
 
+function iS_on_Shape(x,y,shape){
+  let shape_left = toscreenX(shape.x);
+  let shape_right = toscreenX(shape.x) + shape.width * global.scale;
+  let shape_top = toscreenY(shape.y);
+  let shape_bottom = toscreenY(shape.y) + shape.height * global.scale;
+
+  if(x > shape_left && x < shape_right && y > shape_top && y < shape_bottom) return true;
+  else return false;
+}
 
 
         function mouseDown(e) {
             e.preventDefault();
+            tempstate = global.draw;
             if (e.button === 0) {
                 leftmouseDown = true;
                 rightMouseDown = false;
@@ -73,12 +108,22 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
                 leftmouseDown = false;
                 rightMouseDown = true;
             }
-
+            let index = 0;
+            for(let shape of global.shapes){
+                if(iS_on_Shape(e.pageX,e.pageY,shape)) {
+                    global.draw = "OnShape";
+                    global.shape_index = index;
+                }
+                index++
+            }
+           
             // update cursor coordinates
             global.cursorX = e.pageX;
             global.cursorY = e.pageY;
             global.prevcursorX = e.pageX;
             global.prevcursorY = e.pageY;
+            global.downX = e.pageX;
+            global.downY = e.pageY;
         }
 
         function mouseUp() {
@@ -89,13 +134,25 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
                 global.drawing.push({state:global.state,data:currState});
             }    
             currState = [];
+            if(global.draw !== "OnShape") global.draw = "HOLD";
+            global.draw = tempstate;
+            if(global.draw === "SQUARE"){
+                global.draw = 'HOLD';
+                // x /scale = offset
+                global.shapes.push({x:totrueX(global.downX),y:totrueY(global.downY),width:Math.abs(global.shapeX - global.downX)/global.scale,height:Math.abs(global.shapeY - global.downY)/global.scale})
+                redrawCanvas();
+                global.downX = 0;
+                global.downY = 0;
+                global.shapeX = 0;
+                global.shapeY = 0;
+            }
+
         }
 
         function mouseMove(e) {
             if (leftmouseDown) {
                 global.cursorX = e.pageX;
                 global.cursorY = e.pageY;
-                
                 const scaledx = totrueX(global.cursorX);
                 const scaledy = totrueY(global.cursorY);
                 const prevscaledx = totrueX(global.prevcursorX);
@@ -107,17 +164,34 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
                           x1: scaledx,
                           y1: scaledy,
                           strokeStyle:global.strokeStyle,
-                          lineWidth:global.strokeWidth,
+                          lineWidth:global.strokeWidth/global.scale,
                     })
 
                     drawline(global.prevcursorX, global.prevcursorY, global.cursorX, global.cursorY,global.strokeStyle,global.strokeWidth);
                 }
+
+                if(global.draw === 'OnShape'){
+                    global.shapes[global.shape_index].x += (global.cursorX - global.prevcursorX) / global.scale;
+                    global.shapes[global.shape_index].y += (global.cursorY - global.prevcursorY) / global.scale;
+                    redrawCanvas();
+                    
+                    
+                }
+
+
                 if (global.draw === 'PAN') {
                     global.offsetX += (global.cursorX - global.prevcursorX) / global.scale;
                     global.offsetY += (global.cursorY - global.prevcursorY) / global.scale;
                     redrawCanvas();
                 }
+                if(global.draw === 'SQUARE'){
+                    global.shapeX = global.cursorX;
+                    global.shapeY = global.cursorY; 
+                    redrawCanvas();
+              }
             }
+
+           
 
             global.prevcursorX = global.cursorX;
             global.prevcursorY = global.cursorY;
@@ -164,7 +238,17 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
                 singleTouche = false;
                 doubleTouche = true;
             }
+            let index = 0;
+            for(let shape of global.shapes){
+                if(iS_on_Shape(e.touches[0].pageX,e.touches[0].pageY,shape)) {
+                    global.draw = "OnShape";
+                    global.shape_index = index;
+                }
+                index++
+            }
 
+            global.downX = e.touches[0].pageX;
+            global.downY = e.touches[0].pageY;
             global.prevTouches[0] = e.touches[0];
             global.prevTouches[1] = e.touches[1];
         }
@@ -172,8 +256,21 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
         function touchEnd(e) {
             singleTouche = false;
             doubleTouche = false;
-            if(global.draw === 'DRAW')global.drawing.push({state:global.state,data:currState});
+            if(global.draw === 'DRAW' && currState.length > 0){ 
+                global.state++;
+                global.drawing.push({state:global.state,data:currState});
+            }  
             currState = [];
+            if(global.draw === "SQUARE"){
+                global.draw = 'HOLD';
+                // x /scale = offset
+                global.shapes.push({x:totrueX(global.downX),y:totrueY(global.downY),width:Math.abs(global.shapeX - global.downX)/global.scale,height:Math.abs(global.shapeY - global.downY)/global.scale})
+                redrawCanvas();
+                global.downX = 0;
+                global.downY = 0;
+                global.shapeX = 0;
+                global.shapeY = 0;
+            }
         }
 
         function touchMove(e) {
@@ -195,7 +292,7 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
                     x1: scaledx,
                     y1: scaledy,
                     strokeStyle:global.strokeStyle,
-                    lineWidth:global.strokeWidth,
+                    lineWidth:global.strokeWidth/global.scale,
                 })
 
                 drawline(global.prevTouch0x, global.prevTouch0y, global.touch0x, global.touch0y,global.strokeStyle,global.strokeWidth);
@@ -206,9 +303,17 @@ function drawline(x0, y0, x1, y1,color,lineWidth) {
                     global.offsetY += (global.touch0y - global.prevTouch0y) / global.scale;
                     redrawCanvas();
                 }
-
-            
+                if(global.draw === 'SQUARE'){
+                    global.shapeX = global.touch0x;
+                    global.shapeY = global.touch0y; 
+                    redrawCanvas();
+              }
+              if(global.draw === 'OnShape'){
+                global.shapes[global.shape_index].x += (global.touch0x - global.prevTouch0x) / global.scale;
+                global.shapes[global.shape_index].y += (global.touch0y - global.prevTouch0y) / global.scale;
+                redrawCanvas();
             }
+        }
 
             if (doubleTouche) {
                 // important 
@@ -267,7 +372,8 @@ export default function Board() {
     useEffect(() => {
 
         global.canvas = document.getElementById("board");
-        
+        const context = global.canvas.getContext("2d");
+      
         //disable right click
         document.oncontextmenu = function() {
             return false;
@@ -283,7 +389,6 @@ export default function Board() {
         global.canvas.addEventListener('mouseup', mouseUp, false);
         global.canvas.addEventListener('mousemove', mouseMove, false);
         global.canvas.addEventListener('wheel', mouseWheel, false);
-        global.canvas.style.cursor = "url('https://img.icons8.com/FFFFFF/external-those-icons-lineal-color-those-icons/24/FF0C0C/external-cursor-selection-cursors-those-icons-lineal-color-those-icons-1.png'), auto"
         global.canvas.addEventListener('touchstart', touchStart);
         global.canvas.addEventListener('touchend', touchEnd);
         global.canvas.addEventListener('touchmove', touchMove);

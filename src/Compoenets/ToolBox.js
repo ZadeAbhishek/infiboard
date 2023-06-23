@@ -10,6 +10,7 @@ let global = varaible();
 export default function ToolBox() {
 
   function draw() {
+    global.canvas.style.cursor = "url('https://img.icons8.com/FFFFFF/external-those-icons-lineal-color-those-icons/24/FF0C0C/external-cursor-selection-cursors-those-icons-lineal-color-those-icons-1.png'), auto"
     global.draw = 'DRAW';
   }
 
@@ -30,6 +31,7 @@ export default function ToolBox() {
 
 
   function pan() {
+    global.canvas.style.cursor = "grabbing";
     global.draw = 'PAN';
   }
 
@@ -38,6 +40,11 @@ export default function ToolBox() {
     global.offsetY = 0;
     global.scale = 1;
     redrawCanvas();
+  }
+
+  function drawSqaure(){
+    global.canvas.style.cursor = "url('https://img.icons8.com/ios-glyphs/30/move.png'), auto"
+    global.draw = "SQUARE"
   }
 
   function strokeColor(color) {
@@ -121,6 +128,10 @@ export default function ToolBox() {
         <button onClick={setCentre} type="button" className="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrows-angle-contract" viewBox="0 0 16 16">
           <path fillRule="evenodd" d="M.172 15.828a.5.5 0 0 0 .707 0l4.096-4.096V14.5a.5.5 0 1 0 1 0v-3.975a.5.5 0 0 0-.5-.5H1.5a.5.5 0 0 0 0 1h2.768L.172 15.121a.5.5 0 0 0 0 .707zM15.828.172a.5.5 0 0 0-.707 0l-4.096 4.096V1.5a.5.5 0 1 0-1 0v3.975a.5.5 0 0 0 .5.5H14.5a.5.5 0 0 0 0-1h-2.768L15.828.879a.5.5 0 0 0 0-.707z" />
         </svg></button>
+
+        <button onClick={drawSqaure} type="button" className="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-square" viewBox="0 0 16 16">
+  <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+</svg></button>
       </div>
 
       <div className="dropup-center dropup">
@@ -137,6 +148,7 @@ export default function ToolBox() {
           <li className='setting-li'><button className='btn btn-primary' onClick={loadBoard}>Submit</button></li>
         </ul>
       </div>
+
     </>
   )
 }
