@@ -23,6 +23,7 @@ class Stack {
 let states = {
     projectName: 'untitled',
     draw: 'HOLD',
+    prevState: 'HOLD',
     focusCenter: false,
     drawing: [],
     shapes: [],

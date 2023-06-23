@@ -11,6 +11,7 @@ export default function ToolBox() {
 
   function draw() {
     global.canvas.style.cursor = "url('https://img.icons8.com/FFFFFF/external-those-icons-lineal-color-those-icons/24/FF0C0C/external-cursor-selection-cursors-those-icons-lineal-color-those-icons-1.png'), auto"
+    global.prevState = global.draw;
     global.draw = 'DRAW';
   }
 
@@ -32,6 +33,7 @@ export default function ToolBox() {
 
   function pan() {
     global.canvas.style.cursor = "grabbing";
+    global.prevState = global.draw;
     global.draw = 'PAN';
   }
 
@@ -44,6 +46,7 @@ export default function ToolBox() {
 
   function drawSqaure(){
     global.canvas.style.cursor = "url('https://img.icons8.com/ios-glyphs/30/move.png'), auto"
+    global.prevState = global.draw;
     global.draw = "SQUARE"
   }
 
