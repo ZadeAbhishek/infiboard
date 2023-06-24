@@ -31,7 +31,16 @@ export function redrawCanvas() {
   }
 
   for (let shape of global.shapes) {
-    context.beginPath();
+     reDrawShape(shape.data,context);
+  }
+
+  if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
+      drawShape(context);
+  }
+}
+
+function reDrawShape(shape,context){
+  context.beginPath();
     context.fillStyle = "red";
     context.fillRect(
       toscreenX(shape.x),
@@ -51,11 +60,6 @@ export function redrawCanvas() {
       currWidth(shape.width),
       currHeight(shape.height)
     );
-  }
-
-  if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
-      drawShape(context);
-  }
 }
 
 function drawShape(context){
@@ -82,14 +86,17 @@ function drawShape(context){
 }
 
 function pushShape(){
-    global.draw = "HOLD";
     // x /scale = offset
-    global.shapes.push({
+    global.state++;
+    global.shapes.push({ state:global.state,data:{
       x: totrueX(global.downX),
       y: totrueY(global.downY),
       width: (global.shapeX - global.downX) / global.scale,
       height: (global.shapeY - global.downY) / global.scale,
+    }
     });
+    
+    global.draw = "HOLD";
     redrawCanvas();
     global.downX = 0;
     global.downY = 0;
@@ -168,8 +175,9 @@ function mouseDown(e) {
   }
   global.prevState = global.draw;
   let index = 0;
+  
   for (let shape of global.shapes) {
-    if (iS_on_Shape(e.pageX, e.pageY, shape)) {
+    if (iS_on_Shape(e.pageX, e.pageY,shape.data)) {
       global.draw = "OnShape";
       global.shape_index = index;
     }
@@ -189,7 +197,7 @@ function mouseUp() {
   rightMouseDown = false;
   if (global.draw === "DRAW" && currState.length > 0) {
     global.state++;
-    global.drawing.push({ state: global.state, data: currState });
+    global.drawing.push({state: global.state, data: currState });
   }
   currState = [];
 
@@ -229,9 +237,9 @@ function mouseMove(e) {
 
     if (global.draw === "OnShape") {
         console.log(global.shape_index);
-      global.shapes[global.shape_index].x +=
+      global.shapes[global.shape_index].data.x +=
         (global.cursorX - global.prevcursorX) / global.scale;
-      global.shapes[global.shape_index].y +=
+      global.shapes[global.shape_index].data.y +=
         (global.cursorY - global.prevcursorY) / global.scale;
       redrawCanvas();
     }
@@ -288,7 +296,7 @@ function touchStart(e) {
   global.prevState = global.draw;
   let index = 0;
   for (let shape of global.shapes) {
-    if (iS_on_Shape(e.touches[0].pageX, e.touches[0].pageY, shape)) {
+    if (iS_on_Shape(e.touches[0].pageX, e.touches[0].pageY, shape.data)) {
       global.draw = "OnShape";
       global.shape_index = index;
     }
@@ -304,7 +312,7 @@ function touchStart(e) {
 function touchEnd(e) {
   singleTouche = false;
   doubleTouche = false;
-  if (global.draw === "DRAW" && currState.length > 0) {
+  if (global.draw === "DRAW" && currState.length > 0){
     global.state++;
     global.drawing.push({ state: global.state, data: currState });
   }
@@ -357,9 +365,9 @@ function touchMove(e) {
       redrawCanvas();
     }
     if (global.draw === "OnShape") {
-      global.shapes[global.shape_index].x +=
+      global.shapes[global.shape_index].data.x +=
         (global.touch0x - global.prevTouch0x) / global.scale;
-      global.shapes[global.shape_index].y +=
+      global.shapes[global.shape_index].data.y +=
         (global.touch0y - global.prevTouch0y) / global.scale;
       redrawCanvas();
     }

@@ -15,6 +15,10 @@ class Stack {
         this.data.reverse();
         return curr;
     }
+    top() {
+        if (this.data.length === 0) return null;
+        return this.data[0];
+    }
     print() {
         console.log(...this.data);
     }

@@ -16,18 +16,35 @@ export default function ToolBox() {
   }
 
   function undo() {
-    let curr = global.drawing.pop();
-    global.state--;
-    global.stack.push(curr);
-    redrawCanvas();
+   // let curr = global.drawing.pop();
+   // global.state--;
+   // global.stack.push(curr);
+   // redrawCanvas();
+   let drawlen = global.drawing.length;
+   let shapelen = global.shapes.length;
+   let currDraw = (drawlen > 0)?global.drawing[drawlen-1].state:-1;
+   let currShape = (shapelen > 0)?global.shapes[shapelen-1].state:-1;
+   if(currDraw === -1 && currShape === -1) return;
+   let popele = (currDraw > currShape)?global.drawing.pop():global.shapes.pop();
+   (currDraw > currShape)?global.stack.push({state:"DRAW",data:popele}):global.stack.push({state:"SHAPE",data:popele});
+   global.state--;
+   redrawCanvas();
   }
 
   function redo() {
     let curr = global.stack.pop();
     if (curr === null) return;
     global.state++;
-    if (curr != null) global.drawing.push(curr);
-    redrawCanvas();
+    if(curr.state === "SHAPE"){
+      curr.state = global.state;
+      global.shapes.push({state:curr.state,data:curr.data.data});
+      redrawCanvas();
+    }
+    if(curr.state === "DRAW"){
+      curr.state = global.state;
+      global.drawing.push({state:curr.state,data:curr.data.data});
+      redrawCanvas();
+    }
   }
 
 
@@ -71,14 +88,19 @@ export default function ToolBox() {
     let fileReader = new FileReader();
     fileReader.onload = function () {
       let parsedJSON = JSON.parse(fileReader.result);
-      global.drawing = parsedJSON;
+      global.drawing = parsedJSON.drawing;
+      global.shapes = parsedJSON.shapes;
       redrawCanvas();
     }
     fileReader.readAsText(document.querySelector('.file').files[0]);
   }
 
   function saveBoard() {
-    const blob = new Blob([JSON.stringify(global.drawing, null, 6)], { type: 'application/json' });
+    let curr = {
+      drawing:global.drawing,
+      shapes:global.shapes,
+    }
+    const blob = new Blob([JSON.stringify(curr, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${global.projectName}.json`;
@@ -92,6 +114,10 @@ export default function ToolBox() {
     anchor.href = dataUrl;
     anchor.download = `${global.projectName}.png`;
     anchor.click();
+  }
+
+  function openGithub(){
+    window.open("https://github.com/ZadeAbhishek/infiboard");
   }
 
   return (
@@ -136,7 +162,12 @@ export default function ToolBox() {
   <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
 </svg></button>
       </div>
-
+ 
+     <div id="githubPage">
+     <button onClick={openGithub} type="button" class="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+</svg></button>
+        </div>
       <div className="dropup-center dropup">
         <button className="btn btn-secondary dropdown-toggle btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-gear" viewBox="0 0 16 16">

@@ -1,6 +1,6 @@
 .dropup-center {
     bottom: 1%;
-    left: 2%;
+    left: 1%;
     position: fixed;
     z-index: 99;
 }
@@ -37,4 +37,10 @@
 .setting-li {
     margin-left: 2px;
     margin-bottom: 5px;
+}
+
+#githubPage {
+    position: fixed;
+    bottom: 1%;
+    right: 1%;
 }
