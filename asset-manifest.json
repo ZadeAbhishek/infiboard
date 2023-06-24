@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/infiboard/static/css/main.59ba27d1.css",
-    "main.js": "/infiboard/static/js/main.9a30337c.js",
+    "main.css": "/infiboard/static/css/main.0610ddec.css",
+    "main.js": "/infiboard/static/js/main.18aec22a.js",
     "static/js/787.169eb9fd.chunk.js": "/infiboard/static/js/787.169eb9fd.chunk.js",
     "index.html": "/infiboard/index.html",
-    "main.59ba27d1.css.map": "/infiboard/static/css/main.59ba27d1.css.map",
-    "main.9a30337c.js.map": "/infiboard/static/js/main.9a30337c.js.map",
+    "main.0610ddec.css.map": "/infiboard/static/css/main.0610ddec.css.map",
+    "main.18aec22a.js.map": "/infiboard/static/js/main.18aec22a.js.map",
     "787.169eb9fd.chunk.js.map": "/infiboard/static/js/787.169eb9fd.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.59ba27d1.css",
-    "static/js/main.9a30337c.js"
+    "static/css/main.0610ddec.css",
+    "static/js/main.18aec22a.js"
   ]
 }
