@@ -22,18 +22,11 @@ export default function ToolBox() {
   }
 
   function undo() {
-   // let curr = global.drawing.pop();
-   // global.state--;
-   // global.stack.push(curr);
-   // redrawCanvas();
-   let drawlen = global.drawing.length;
-   let shapelen = global.shapes.length;
-   let currDraw = (drawlen > 0)?global.drawing[drawlen-1].state:-1;
-   let currShape = (shapelen > 0)?global.shapes[shapelen-1].state:-1;
-   if(currDraw === -1 && currShape === -1) return;
-   let popele = (currDraw > currShape)?global.drawing.pop():global.shapes.pop();
-   (currDraw > currShape)?global.stack.push({state:"DRAW",data:popele}):global.stack.push({state:"SHAPE",data:popele});
+   let curr = global.drawing.pop();
+   if(curr === undefined) return;
+
    global.state--;
+   global.stack.push(curr);
    redrawCanvas();
   }
 
@@ -41,16 +34,8 @@ export default function ToolBox() {
     let curr = global.stack.pop();
     if (curr === null) return;
     global.state++;
-    if(curr.state === "SHAPE"){
-      curr.state = global.state;
-      global.shapes.push({state:curr.state,data:curr.data.data});
-      redrawCanvas();
-    }
-    if(curr.state === "DRAW"){
-      curr.state = global.state;
-      global.drawing.push({state:curr.state,data:curr.data.data});
-      redrawCanvas();
-    }
+    global.drawing.push(curr);
+    redrawCanvas();
   }
 
 
@@ -94,19 +79,14 @@ export default function ToolBox() {
     let fileReader = new FileReader();
     fileReader.onload = function () {
       let parsedJSON = JSON.parse(fileReader.result);
-      global.drawing = parsedJSON.drawing;
-      global.shapes = parsedJSON.shapes;
+      global.drawing = parsedJSON;
       redrawCanvas();
     }
     fileReader.readAsText(document.querySelector('.file').files[0]);
   }
 
   function saveBoard() {
-    let curr = {
-      drawing:global.drawing,
-      shapes:global.shapes,
-    }
-    const blob = new Blob([JSON.stringify(curr, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(global.drawing, null, 3)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${global.projectName}.json`;

@@ -23,7 +23,6 @@ class Stack {
         console.log(...this.data);
     }
 }
-
 let states = {
     projectName: 'untitled',
     draw: 'HOLD',
@@ -54,14 +53,14 @@ let states = {
     canvas: document.getElementById("board"),
     strokeStyle: '#fff',
     strokeWidth: 2,
-    boardColor: "#1f1f1f",
+    boardColor: "#000000",
     state: 0,
     stack: new Stack(),
     shape_index: 0,
     offsetLeft: 0,
     offsetTop: 0,
+    Path2d: null,
 }
-
 export default function varaible() {
     return states;
 }
