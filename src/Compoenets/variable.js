@@ -60,6 +60,13 @@ let states = {
     offsetLeft: 0,
     offsetTop: 0,
     Path2d: null,
+    context: null,
+    rect: null,
+    velocity: null,
+    downTime: null,
+    accX: 0,
+    accY: 0,
+    raf: null,
 }
 export default function varaible() {
     return states;

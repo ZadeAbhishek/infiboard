@@ -24,7 +24,6 @@ export default function ToolBox() {
   function undo() {
    let curr = global.drawing.pop();
    if(curr === undefined) return;
-
    global.state--;
    global.stack.push(curr);
    redrawCanvas();

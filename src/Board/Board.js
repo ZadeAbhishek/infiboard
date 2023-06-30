@@ -10,16 +10,18 @@ let doubleTouche = false;
 let leftmouseDown = false;
 let rightMouseDown = false;
 let tempstate = "HOLD";
+let frameRate = 120;
+let cycleWidth = 30;
 export function redrawCanvas() {
   global.canvas.width = document.body.clientWidth;
   global.canvas.height = document.body.clientHeight;
-  const context = global.canvas.getContext("2d");
-  context.fillStyle = global.boardColor;
-  context.fillRect(0, 0, global.canvas.width, global.canvas.height);
+  global.context.fillStyle = global.boardColor;
+  global.context.fillRect(0, 0, global.canvas.width, global.canvas.height);
   for (let i = 0; i < global.drawing.length; i++) {
       if (global.drawing[i].type === "DRAW") {
           for (let j = 0; j < global.drawing[i].data.length; j++) {
               const line = global.drawing[i].data[j];
+              global.Path2d = new Path2D();
               drawline(toscreenX(line.x0), toscreenY(line.y0), toscreenX(line.x1),
                   toscreenY(line.y1),
                   global.drawing[i].data[j].strokeStyle,
@@ -28,7 +30,7 @@ export function redrawCanvas() {
           }
       }
       if (global.drawing[i].type === "SQUARE") {
-          reDrawShape(global.drawing[i].data, context);
+          reDrawShape(global.drawing[i].data);
       }
       if (global.drawing[i].type === "ERASE") {
           for (let j = 0; j < global.drawing[i].data.length; j++) {
@@ -45,20 +47,20 @@ export function redrawCanvas() {
       }
   }
   if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
-      drawShape(context);
+      drawShape();
   }
 }
 
-function reDrawShape(shape, context) {
-  context.beginPath();
-  context.fillStyle = shape.color;
-  context.fillRect(
+function reDrawShape(shape) {
+  global.context.beginPath();
+  global.context.fillStyle = shape.color;
+  global.context.fillRect(
       toscreenX(shape.x),
       toscreenY(shape.y),
       currWidth(shape.width),
       currHeight(shape.height)
   );
-  context.strokeRect(
+  global.context.strokeRect(
       toscreenX(shape.x),
       toscreenY(shape.y),
       currWidth(shape.width),
@@ -66,16 +68,16 @@ function reDrawShape(shape, context) {
   );
 }
 
-function drawShape(context) {
-  context.beginPath();
-  context.fillStyle = global.strokeStyle;
-  context.fillRect(
+function drawShape() {
+  global.context.beginPath();
+  global.context.fillStyle = global.strokeStyle;
+  global.context.fillRect(
       global.downX,
       global.downY,
       global.shapeX - global.downX,
       global.shapeY - global.downY
   );
-  context.strokeRect(
+  global.context.strokeRect(
       global.downX,
       global.downY,
       global.shapeX - global.downX,
@@ -155,13 +157,12 @@ function trueWidth() {
 }
 
 function drawline(x0, y0, x1, y1, color, lineWidth) {
-  const context = global.canvas.getContext("2d");
-  context.beginPath();
-  context.moveTo(x0, y0);
-  context.lineTo(x1, y1);
-  context.strokeStyle = color;
-  context.lineWidth = lineWidth;
-  context.stroke();
+  global.context.beginPath();
+  global.Path2d.moveTo(x0, y0);
+  global.Path2d.lineTo(x1, y1);
+  global.context.strokeStyle = color;
+  global.context.lineWidth = lineWidth;
+  global.context.stroke(global.Path2d);
 }
 
 function iS_on_Shape(x, y, shape) {
@@ -180,8 +181,31 @@ function iS_on_Shape(x, y, shape) {
           return true;
       else return false;
   }
-  if (shape.type === "DRAW") {}
+  // if (shape.type === "DRAW") {}
   return false;
+}
+
+function panMove(x1,y1,x0,y0){
+    let time = new Date().getTime() - global.downTime;
+    let velocity = (Math.sqrt(Math.pow((x1-x0),2)+Math.pow((y1-y0),2)))/time;
+    global.accX = ((x1-x0))/time;
+    global.accY = ((y1-y0))/time;
+    let speedIndex = 5;
+    global.accX = global.accX < 0?-1*speedIndex:speedIndex;
+    global.accY = global.accY < 0?-1*speedIndex:speedIndex;
+    global.accX *= Math.abs(velocity/global.scale);
+    global.accY *= Math.abs(velocity/global.scale); 
+    global.raf = requestAnimationFrame(accPan);
+    setTimeout(() => {cancelAnimationFrame(global.raf);}, 500);
+}
+
+function accPan(){
+  global.offsetX += global.accX;
+  global.offsetY += global.accY;
+  global.accX *= 0.89;
+  global.accY *= 0.89;  
+  redrawCanvas();
+  global.raf = requestAnimationFrame(accPan);
 }
 
 function mouseDown(e) {
@@ -197,20 +221,26 @@ function mouseDown(e) {
   global.prevState = global.draw;
   let index = 0;
   for (let shape of global.drawing) {
-      if (iS_on_Shape(e.pageX, e.pageY, shape)) {
+      if (shape.type === "SQUARE" && iS_on_Shape(e.clientX, e.clientY, shape)) {
           global.draw = "OnShape";
           global.shape_index = index;
       }
       index++;
   }
   // update cursor coordinates
-  global.cursorX = e.pageX;
-  global.cursorY = e.pageY;
-  global.prevcursorX = e.pageX;
-  global.prevcursorY = e.pageY;
-  global.downX = e.pageX;
-  global.downY = e.pageY;
+  cancelAnimationFrame(global.raf);
+  global.Path2d = new Path2D();
+  global.downTime = new Date().getTime();
+  global.accX = 0;
+  global.accY = 0;
+  global.cursorX = e.clientX;
+  global.cursorY = e.clientY;
+  global.prevcursorX = e.clientX;
+  global.prevcursorY = e.clientY;
+  global.downX = e.clientX;
+  global.downY = e.clientY;
 }
+
 
 function mouseUp() {
   leftmouseDown = false;
@@ -227,13 +257,21 @@ function mouseUp() {
   if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
       pushShape();
   }
+
+  if(global.draw === "PAN"){
+    let x1 = global.cursorX;
+    let y1 = global.cursorY;
+    let x0 = global.downX;
+    let y0 = global.downY;
+    panMove(x1,y1,x0,y0);
+}
   global.draw = global.prevState;
 }
 
 function mouseMove(e) {
   if (leftmouseDown) {
-      global.cursorX = e.pageX;
-      global.cursorY = e.pageY;
+      global.cursorX = e.clientX;
+      global.cursorY = e.clientY;
       const scaledx = totrueX(global.cursorX);
       const scaledy = totrueY(global.cursorY);
       const prevscaledx = totrueX(global.prevcursorX);
@@ -249,6 +287,7 @@ function mouseMove(e) {
               (global.draw === "DRAW" ? global.strokeWidth : (global.strokeWidth * 10)),
           );
       }
+
       if (global.draw === "OnShape") {
           global.drawing[global.shape_index].data.x +=
               (global.cursorX - global.prevcursorX) / global.scale;
@@ -257,6 +296,7 @@ function mouseMove(e) {
           redrawCanvas();
       }
       if (global.draw === "PAN") {
+          
           global.offsetX += (global.cursorX - global.prevcursorX) / global.scale;
           global.offsetY += (global.cursorY - global.prevcursorY) / global.scale;
           redrawCanvas();
@@ -267,6 +307,10 @@ function mouseMove(e) {
           redrawCanvas();
       }
   }
+  // const rect = global.context.canvas.getBoundingClientRect();
+  // const x = e.clientX - rect.left;
+  // const y = e.clientY - rect.top;
+  // if(global.context.isPointInStroke(x,y)) console.log("True");
   global.prevcursorX = global.cursorX;
   global.prevcursorY = global.cursorY;
 }
@@ -299,55 +343,60 @@ function touchStart(e) {
   }
   global.prevState = global.draw;
   let index = 0;
-  for (let shape of global.shapes) {
-      if (iS_on_Shape(e.touches[0].pageX, e.touches[0].pageY, shape.data)) {
+  for (let shape of global.drawing) {
+      if (iS_on_Shape(e.touches[0].clientX, e.touches[0].clientY, shape)) {
           global.draw = "OnShape";
           global.shape_index = index;
       }
       index++;
   }
-  global.downX = e.touches[0].pageX;
-  global.downY = e.touches[0].pageY;
+  cancelAnimationFrame(global.raf);
+  global.downTime = new Date().getTime();
+  global.accX = 0;
+  global.accY = 0;
+  global.downX = e.touches[0].clientX;
+  global.downY = e.touches[0].clientY;
   global.prevTouches[0] = e.touches[0];
   global.prevTouches[1] = e.touches[1];
 }
 
 function touchEnd(e) {
-  singleTouche = false;
-  doubleTouche = false;
   if ((global.draw === "DRAW" || global.draw === "ERASE") && currState.length > 0) {
       global.state++;
       global.drawing.push({
+          type: global.draw,
           state: global.state,
           data: currState
       });
   }
+  if(global.draw === "PAN" && doubleTouche == false){
+    let x1 = global.touch0x;
+    let y1 = global.touch0y;
+    let x0 = global.downX;
+    let y0 = global.downY;
+    panMove(x1,y1,x0,y0);
+}
   currState = [];
   if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
       pushShape();
   }
+  singleTouche = false;
+  doubleTouche = false;
   global.draw = global.prevState;
 }
 
 function touchMove(e) {
-  global.touch0x = e.touches[0].pageX;
-  global.touch0y = e.touches[0].pageY;
-  global.prevTouch0x = global.prevTouches[0].pageX;
-  global.prevTouch0y = global.prevTouches[0].pageY;
+  global.touch0x = e.touches[0].clientX;
+  global.touch0y = e.touches[0].clientY;
+  global.prevTouch0x = global.prevTouches[0].clientX;
+  global.prevTouch0y = global.prevTouches[0].clientY;
   const scaledx = totrueX(global.touch0x);
   const scaledy = totrueY(global.touch0y);
   const prevscaledx = totrueX(global.prevTouch0x);
   const prevscaledy = totrueY(global.prevTouch0y);
   if (singleTouche) {
       if (global.draw === "DRAW" || global.draw === "ERASE") {
-          currState.push({
-              x0: prevscaledx,
-              y0: prevscaledy,
-              x1: scaledx,
-              y1: scaledy,
-              strokeStyle: global.draw === "DRAW" ? global.strokeStyle : global.boardColor,
-              lineWidth: (global.draw === "DRAW" ? global.strokeWidth / global.scale : (global.strokeWidth * 10) / global.scale),
-          });
+          saveRerender(prevscaledx, prevscaledy, scaledx, scaledy);
           drawline(
               global.prevTouch0x,
               global.prevTouch0y,
@@ -368,9 +417,9 @@ function touchMove(e) {
           redrawCanvas();
       }
       if (global.draw === "OnShape") {
-          global.shapes[global.shape_index].data.x +=
+          global.drawing[global.shape_index].data.x +=
               (global.touch0x - global.prevTouch0x) / global.scale;
-          global.shapes[global.shape_index].data.y +=
+          global.drawing[global.shape_index].data.y +=
               (global.touch0y - global.prevTouch0y) / global.scale;
           redrawCanvas();
       }
@@ -423,7 +472,9 @@ function touchMove(e) {
 export default function Board() {
   useEffect(() => {
       global.canvas = document.getElementById("board");
-      const context = global.canvas.getContext("2d");
+      global.context = global.canvas.getContext("2d");
+      global.rect = global.canvas.getBoundingClientRect();
+      global.Path2d = new Path2D();
       //disable right click
       document.oncontextmenu = function() {
           return false;
