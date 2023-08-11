@@ -39,11 +39,8 @@ To run the **Infinite Blackboard** project on your local machine, follow these s
 3. Install all Dependancy
    ```bash
      npm install
-
    ```
-
-4.  Start Server
+4. Start Server
    ```bash
    npm start
-
    ```  
