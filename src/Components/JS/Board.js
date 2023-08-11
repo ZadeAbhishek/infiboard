@@ -210,7 +210,7 @@ function panMove(x1,y1,x0,y0){
     // need for improvements
     let time = new Date().getTime() - global.downTime;
     let velocity = (Math.sqrt(Math.pow((x1-x0),2)+Math.pow((y1-y0),2)))/time;
-    let speedIndex = 2;
+    let speedIndex = 3;
     global.accX = ((x1-x0))/time;
     global.accY = ((y1-y0))/time;
     global.accX *= speedIndex;

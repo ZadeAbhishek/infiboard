@@ -29,18 +29,40 @@ Feel free to connect with me on LinkedIn to explore my experiences and projects:
 
 ## Running the Project Locally
 
+### Run Manually
+
 To run the **Infinite Blackboard** project on your local machine, follow these steps:
 
-1. Clone the project repository.
-2. Navigate to the project directory in your terminal:
+- Clone the project repository.
+- Navigate to the project directory in your terminal:
    ```bash
    cd INFINITE-BOARD
    ```
-3. Install all Dependancy
+- Install all Dependancy
    ```bash
-     npm install
+    npm install
    ```
-4. Start Server
+- Start Server
    ```bash
    npm start
-   ```  
+   ```
+
+### Run using Docker-Compose
+
+- Initial command to build Docker Container
+```bash
+docker-compose up -d --build
+```
+
+- To Run Docker
+```bash
+docker-compose up
+```
+
+- Stop Docker
+```bash
+docker-compose stop
+```
+
+
+
