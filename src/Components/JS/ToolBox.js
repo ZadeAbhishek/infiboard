@@ -1,6 +1,6 @@
-import './ToolBox.css'
+import '../CSS/ToolBox.css'
 import varaible from './variable';
-import { redrawCanvas } from '../Board/Board';
+import { redrawCanvas } from './Board';
 import { useState } from 'react';
 
 

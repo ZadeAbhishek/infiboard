@@ -1,72 +1,99 @@
-import React, {
-  useEffect
-} from "react";
-import "./Board.css";
-import varaible from "../Compoenets/variable";
+import React, { useEffect } from "react";
+import "../CSS/Board.css";
+import varaible from "./variable";
+
+// Initialize global variables
 let global = varaible();
 let currState = [];
 let singleTouche = false;
 let doubleTouche = false;
 let leftmouseDown = false;
+// eslint-disable-next-line
 let rightMouseDown = false;
-let tempstate = "HOLD";
-let frameRate = 120;
-let cycleWidth = 30;
-export function redrawCanvas() {
-  global.canvas.width = document.body.clientWidth;
-  global.canvas.height = document.body.clientHeight;
-  global.context.fillStyle = global.boardColor;
-  global.context.fillRect(0, 0, global.canvas.width, global.canvas.height);
-  for (let i = 0; i < global.drawing.length; i++) {
-      if (global.drawing[i].type === "DRAW") {
-          for (let j = 0; j < global.drawing[i].data.length; j++) {
-              const line = global.drawing[i].data[j];
-              global.Path2d = new Path2D();
-              drawline(toscreenX(line.x0), toscreenY(line.y0), toscreenX(line.x1),
-                  toscreenY(line.y1),
-                  global.drawing[i].data[j].strokeStyle,
-                  global.drawing[i].data[j].lineWidth * global.scale
-              );
-          }
-      }
-      if (global.drawing[i].type === "SQUARE") {
-          reDrawShape(global.drawing[i].data);
-      }
-      if (global.drawing[i].type === "ERASE") {
-          for (let j = 0; j < global.drawing[i].data.length; j++) {
-              const line = global.drawing[i].data[j];
-              drawline(
-                  toscreenX(line.x0),
-                  toscreenY(line.y0),
-                  toscreenX(line.x1),
-                  toscreenY(line.y1),
-                  global.boardColor,
-                  global.drawing[i].data[j].lineWidth * global.scale
-              );
-          }
-      }
-  }
-  if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
-      drawShape();
-  }
-}
 
+// Function to redraw the canvas
+export function redrawCanvas() {
+    // Set the canvas size to match the window dimensions
+    global.canvas.width = document.body.clientWidth;
+    global.canvas.height = document.body.clientHeight;
+  
+    // Fill the canvas with the specified background color
+    global.context.fillStyle = global.boardColor;
+    global.context.fillRect(0, 0, global.canvas.width, global.canvas.height);
+  
+    // Loop through the drawing data and render shapes
+    for (let i = 0; i < global.drawing.length; i++) {
+      // If the drawing is of type "DRAW"
+      if (global.drawing[i].type === "DRAW") {
+        // Loop through the data points of the drawing
+        for (let j = 0; j < global.drawing[i].data.length; j++) {
+          const line = global.drawing[i].data[j];
+          global.Path2d = new Path2D();
+          // Draw a line with specified attributes
+          drawline(
+            toscreenX(line.x0),
+            toscreenY(line.y0),
+            toscreenX(line.x1),
+            toscreenY(line.y1),
+            global.drawing[i].data[j].strokeStyle,
+            global.drawing[i].data[j].lineWidth * global.scale
+          );
+        }
+      }
+      // If the drawing is of type "SQUARE"
+      if (global.drawing[i].type === "SQUARE") {
+        // Redraw the square shape
+        reDrawShape(global.drawing[i].data);
+      }
+      // If the drawing is of type "ERASE"
+      if (global.drawing[i].type === "ERASE") {
+        // Loop through the data points of the eraser
+        for (let j = 0; j < global.drawing[i].data.length; j++) {
+          const line = global.drawing[i].data[j];
+          global.Path2d = new Path2D();
+          // Draw an erased line with specified attributes
+          drawline(
+            toscreenX(line.x0),
+            toscreenY(line.y0),
+            toscreenX(line.x1),
+            toscreenY(line.y1),
+            global.boardColor,
+            global.drawing[i].data[j].lineWidth * global.scale
+          );
+        }
+      }
+    }
+  
+    // Draw the shape in progress if the drawing mode is "SQUARE"
+    if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
+      drawShape();
+    }
+  }
+
+// Function to redraw a square shape
 function reDrawShape(shape) {
-  global.context.beginPath();
-  global.context.fillStyle = shape.color;
-  global.context.fillRect(
+    // Begin a new path for drawing on the canvas
+    global.context.beginPath();
+  
+    // Set the fill style to the color of the shape
+    global.context.fillStyle = shape.color;
+  
+    // Draw a filled rectangle using the specified dimensions and positions
+    global.context.fillRect(
       toscreenX(shape.x),
       toscreenY(shape.y),
       currWidth(shape.width),
       currHeight(shape.height)
-  );
-  global.context.strokeRect(
+    );
+  
+    // Draw the outline of the rectangle using stroke
+    global.context.strokeRect(
       toscreenX(shape.x),
       toscreenY(shape.y),
       currWidth(shape.width),
       currHeight(shape.height)
-  );
-}
+    );
+  }
 
 function drawShape() {
   global.context.beginPath();
@@ -83,12 +110,6 @@ function drawShape() {
       global.shapeX - global.downX,
       global.shapeY - global.downY
   );
-  // context.clearRect(
-  //   global.downX,
-  //   global.downY,
-  //   global.shapeX - global.downX,
-  //   global.shapeY - global.downY
-  // );
 }
 
 function saveRerender(prevx, prevy, x, y) {
@@ -186,17 +207,18 @@ function iS_on_Shape(x, y, shape) {
 }
 
 function panMove(x1,y1,x0,y0){
+    // need for improvements
     let time = new Date().getTime() - global.downTime;
     let velocity = (Math.sqrt(Math.pow((x1-x0),2)+Math.pow((y1-y0),2)))/time;
+    let speedIndex = 2;
     global.accX = ((x1-x0))/time;
     global.accY = ((y1-y0))/time;
-    let speedIndex = 5;
-    global.accX = global.accX < 0?-1*speedIndex:speedIndex;
-    global.accY = global.accY < 0?-1*speedIndex:speedIndex;
+    global.accX *= speedIndex;
+    global.accY *= speedIndex;
     global.accX *= Math.abs(velocity/global.scale);
     global.accY *= Math.abs(velocity/global.scale); 
     global.raf = requestAnimationFrame(accPan);
-    setTimeout(() => {cancelAnimationFrame(global.raf);}, 500);
+    setTimeout(() => {cancelAnimationFrame(global.raf);}, 500); // to stop infinite Acceleration
 }
 
 function accPan(){
@@ -369,7 +391,7 @@ function touchEnd(e) {
           data: currState
       });
   }
-  if(global.draw === "PAN" && doubleTouche == false){
+  if(global.draw === "PAN" && doubleTouche === false){
     let x1 = global.touch0x;
     let y1 = global.touch0y;
     let x0 = global.downX;
