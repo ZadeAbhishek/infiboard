@@ -4,7 +4,7 @@ import varaible from "./variable";
 let global = varaible();
 
 // Function to redraw the canvas
-export function redrawCanvas() {
+export function redrawCanvas(sync = []) {
     // Set the canvas size to match the window dimensions
     global.canvas.width = document.body.clientWidth;
     global.canvas.height = document.body.clientHeight;
@@ -14,12 +14,12 @@ export function redrawCanvas() {
     global.context.fillRect(0, 0, global.canvas.width, global.canvas.height);
 
     // Loop through the drawing data and render shapes
-    for (let i = 0; i < global.drawing.length; i++) {
+    for (let i = 0; i < sync.length && sync[0] !== undefined; i++) {
         // If the drawing is of type "DRAW"
-        if (global.drawing[i].type === "DRAW") {
+        if (sync[i].type === "DRAW") {
             // Loop through the data points of the drawing
-            for (let j = 0; j < global.drawing[i].data.length; j++) {
-                const line = global.drawing[i].data[j];
+            for (let j = 0; j < sync[i].data.length; j++) {
+                const line = sync[i].data[j];
                 global.Path2d = new Path2D();
                 // Draw a line with specified attributes
                 drawline(
@@ -27,21 +27,21 @@ export function redrawCanvas() {
                     toscreenY(line.y0),
                     toscreenX(line.x1),
                     toscreenY(line.y1),
-                    global.drawing[i].data[j].strokeStyle,
-                    global.drawing[i].data[j].lineWidth * global.scale
+                    sync[i].data[j].strokeStyle,
+                    sync[i].data[j].lineWidth * global.scale
                 );
             }
         }
         // If the drawing is of type "SQUARE"
-        if (global.drawing[i].type === "SQUARE") {
+        if (sync[i].type === "SQUARE") {
             // Redraw the square shape
-            reDrawShape(global.drawing[i].data);
+            reDrawShape(sync[i].data);
         }
         // If the drawing is of type "ERASE"
-        if (global.drawing[i].type === "ERASE") {
+        if (sync[i].type === "ERASE") {
             // Loop through the data points of the eraser
-            for (let j = 0; j < global.drawing[i].data.length; j++) {
-                const line = global.drawing[i].data[j];
+            for (let j = 0; j < sync[i].data.length; j++) {
+                const line = sync[i].data[j];
                 global.Path2d = new Path2D();
                 // Draw an erased line with specified attributes
                 drawline(
@@ -50,7 +50,7 @@ export function redrawCanvas() {
                     toscreenX(line.x1),
                     toscreenY(line.y1),
                     global.boardColor,
-                    global.drawing[i].data[j].lineWidth * global.scale
+                    sync[i].data[j].lineWidth * global.scale
                 );
             }
         }
@@ -113,28 +113,6 @@ export function saveRerender(prevx, prevy, x, y) {
         strokeStyle: global.strokeStyle,
         lineWidth: (global.draw === "DRAW" ? global.strokeWidth / global.scale : (global.strokeWidth * 10) / global.scale),
     });
-}
-
-export function pushShape() {
-    // x /scale = offset
-    global.state++;
-    global.drawing.push({
-        type: global.draw,
-        state: global.state,
-        data: {
-            x: totrueX(global.downX),
-            y: totrueY(global.downY),
-            width: (global.shapeX - global.downX) / global.scale,
-            height: (global.shapeY - global.downY) / global.scale,
-            color: global.strokeStyle,
-        }
-    });
-    global.draw = "HOLD";
-    redrawCanvas();
-    global.downX = 0;
-    global.downY = 0;
-    global.shapeX = 0;
-    global.shapeY = 0;
 }
 
 export function toscreenX(xTrue) {

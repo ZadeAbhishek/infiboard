@@ -1,5 +1,11 @@
 import varaible from "./variable";
-import { pushShape, saveRerender, drawline, redrawCanvas, currHeight, totrueX, totrueY, trueHeight, trueWidth, toscreenX, toscreenY, currWidth } from "./render"
+import { saveRerender, drawline, redrawCanvas, currHeight, totrueX, totrueY, trueHeight, trueWidth, toscreenX, toscreenY, currWidth } from "./render"
+import * as Automerge from '@automerge/automerge'
+
+let sync = Automerge.init()
+let userUniqueID = Automerge.getActorId(sync)
+let broadCastID = "1234";
+let network = new BroadcastChannel(broadCastID);
 
 let singleTouche = false;
 let doubleTouche = false;
@@ -9,7 +15,21 @@ let rightMouseDown = false;
 
 // Initialize global variables
 let global = varaible();
+global.projectName = userUniqueID;
 
+
+network.onmessage = (ev) => {
+    let newDoc = Automerge.merge(sync, Automerge.load(ev.data))
+    sync = newDoc
+    redrawCanvas(sync.data);
+}
+
+function updateDoc(newDoc) {
+    sync = newDoc
+    let binary = Automerge.save(newDoc)
+    network.postMessage(binary)
+
+}
 
 export function mouseDown(e) {
     e.preventDefault();
@@ -23,7 +43,8 @@ export function mouseDown(e) {
     }
     global.prevState = global.draw;
     let index = 0;
-    for (let shape of global.drawing) {
+    if (!sync.data) sync.data = [];
+    for (let shape of sync.data) {
         if (shape.type === "SQUARE" && iS_on_Shape(e.clientX, e.clientY, shape)) {
             global.draw = "OnShape";
             global.shape_index = index;
@@ -50,11 +71,16 @@ export function mouseUp() {
     rightMouseDown = false;
     if ((global.draw === "DRAW" || global.draw === "ERASE") && global.currState.length > 0) {
         global.state++;
-        global.drawing.push({
-            type: global.draw,
-            state: global.state,
-            data: global.currState
-        });
+        let newDoc = Automerge.change(sync, syncChange => {
+            if (!syncChange.data) syncChange.data = []
+            syncChange.data.push({
+                type: global.draw,
+                state: global.state,
+                data: global.currState
+            });
+        })
+        updateDoc(newDoc);
+
     }
     global.currState = [];
     if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
@@ -69,7 +95,7 @@ export function mouseUp() {
         panMove(x1, y1, x0, y0);
     }
     global.draw = global.prevState;
-    redrawCanvas();
+    //redrawCanvas(sync.data);
 }
 
 export function mouseMove(e) {
@@ -93,22 +119,22 @@ export function mouseMove(e) {
         }
 
         if (global.draw === "OnShape") {
-            global.drawing[global.shape_index].data.x +=
+            sync.data[global.shape_index].data.x +=
                 (global.cursorX - global.prevcursorX) / global.scale;
-            global.drawing[global.shape_index].data.y +=
+            sync.data[global.shape_index].data.y +=
                 (global.cursorY - global.prevcursorY) / global.scale;
-            redrawCanvas();
+            redrawCanvas(sync.data);
         }
         if (global.draw === "PAN") {
 
             global.offsetX += (global.cursorX - global.prevcursorX) / global.scale;
             global.offsetY += (global.cursorY - global.prevcursorY) / global.scale;
-            redrawCanvas();
+            redrawCanvas(sync.data);
         }
         if (global.draw === "SQUARE") {
             global.shapeX = global.cursorX;
             global.shapeY = global.cursorY;
-            redrawCanvas();
+            redrawCanvas(sync.data);
         }
     }
     global.prevcursorX = global.cursorX;
@@ -129,7 +155,7 @@ export function mouseWheel(e) {
     const unitAddRight = unitZoomedy * disty;
     global.offsetX -= unitAddLeft;
     global.offsetY -= unitAddRight;
-    redrawCanvas();
+    redrawCanvas(sync.data);
 }
 
 export function touchStart(e) {
@@ -143,7 +169,8 @@ export function touchStart(e) {
     }
     global.prevState = global.draw;
     let index = 0;
-    for (let shape of global.drawing) {
+    if (!sync.data) sync.data = []
+    for (let shape of sync.data) {
         if (iS_on_Shape(e.touches[0].clientX, e.touches[0].clientY, shape)) {
             global.draw = "OnShape";
             global.shape_index = index;
@@ -163,11 +190,15 @@ export function touchStart(e) {
 export function touchEnd(e) {
     if ((global.draw === "DRAW" || global.draw === "ERASE") && global.currState.length > 0) {
         global.state++;
-        global.drawing.push({
-            type: global.draw,
-            state: global.state,
-            data: global.currState
-        });
+        let newDoc = Automerge.change(sync, syncChange => {
+            if (!syncChange.data) syncChange.data = []
+            syncChange.data.push({
+                type: global.draw,
+                state: global.state,
+                data: global.currState
+            });
+        })
+        updateDoc(newDoc);
     }
     if (global.draw === "PAN" && doubleTouche === false) {
         let x1 = global.touch0x;
@@ -183,7 +214,7 @@ export function touchEnd(e) {
     singleTouche = false;
     doubleTouche = false;
     global.draw = global.prevState;
-    redrawCanvas();
+    redrawCanvas(sync.data);
 }
 
 export function touchMove(e) {
@@ -210,19 +241,19 @@ export function touchMove(e) {
         if (global.draw === "PAN") {
             global.offsetX += (global.touch0x - global.prevTouch0x) / global.scale;
             global.offsetY += (global.touch0y - global.prevTouch0y) / global.scale;
-            redrawCanvas();
+            redrawCanvas(sync.data);
         }
         if (global.draw === "SQUARE") {
             global.shapeX = global.touch0x;
             global.shapeY = global.touch0y;
-            redrawCanvas();
+            redrawCanvas(sync.data);
         }
         if (global.draw === "OnShape") {
-            global.drawing[global.shape_index].data.x +=
+            sync.data[global.shape_index].data.x +=
                 (global.touch0x - global.prevTouch0x) / global.scale;
-            global.drawing[global.shape_index].data.y +=
+            sync.data[global.shape_index].data.y +=
                 (global.touch0y - global.prevTouch0y) / global.scale;
-            redrawCanvas();
+            redrawCanvas(sync.data);
         }
     }
     if (doubleTouche) {
@@ -265,7 +296,7 @@ export function touchMove(e) {
         const unitTop = unitZoomedy * zoomRatioY; // cal curr top
         global.offsetX += unitLeft; // add to gobal
         global.offsetY += unitTop;
-        redrawCanvas(); // redraw
+        redrawCanvas(sync.data); // redraw
     }
     global.prevTouches[0] = e.touches[0];
     global.prevTouches[1] = e.touches[1];
@@ -291,11 +322,11 @@ function accPan() {
     global.offsetY += global.accY;
     global.accX *= 0.89;
     global.accY *= 0.89;
-    redrawCanvas();
+    redrawCanvas(sync.data);
     global.raf = requestAnimationFrame(accPan);
 }
 
-
+// this logic is not global habe to make it global
 function iS_on_Shape(x, y, shape) {
     if (shape.type === "SQUARE") {
         let shape_left = toscreenX(shape.data.x);
@@ -314,4 +345,30 @@ function iS_on_Shape(x, y, shape) {
     }
     // if (shape.type === "DRAW") {}
     return false;
+}
+
+function pushShape() {
+    // x /scale = offset
+    global.state++;
+    let newDoc = Automerge.change(sync, syncChange => {
+        if (!syncChange.data) syncChange.data = []
+        syncChange.data.push({
+            type: global.draw,
+            state: global.state,
+            data: {
+                x: totrueX(global.downX),
+                y: totrueY(global.downY),
+                width: (global.shapeX - global.downX) / global.scale,
+                height: (global.shapeY - global.downY) / global.scale,
+                color: global.strokeStyle,
+            }
+        });
+    })
+    updateDoc(newDoc);
+    global.draw = "HOLD";
+    redrawCanvas(sync.data);
+    global.downX = 0;
+    global.downY = 0;
+    global.shapeX = 0;
+    global.shapeY = 0;
 }

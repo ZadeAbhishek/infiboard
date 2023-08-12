@@ -2,7 +2,6 @@ import '../CSS/ToolBox.css'
 import varaible from './variable';
 import { redrawCanvas } from './render';
 import { useState } from 'react';
-import { useEffect } from 'react';
 
 
 let global = varaible();
