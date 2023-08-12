@@ -1,18 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import Board from './Components/JS/Board'
-import Header from './Components/JS/Header'
-import ToolBox from './Components/JS/ToolBox'
 import reportWebVitals from './reportWebVitals';
+import Main from './Components/JS/Main';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <>
-    <Header/>
-    <ToolBox/>
-    <Board/>
+    <Main/>
     </>
   </React.StrictMode>
 );

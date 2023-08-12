@@ -67,6 +67,7 @@ let states = {
     accX: 0,
     accY: 0,
     raf: null,
+    currState: [],
 }
 export default function varaible() {
     return states;

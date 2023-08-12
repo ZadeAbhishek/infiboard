@@ -1,14 +1,15 @@
 import '../CSS/ToolBox.css'
 import varaible from './variable';
-import { redrawCanvas } from './Board';
+import { redrawCanvas } from './render';
 import { useState } from 'react';
+import { useEffect } from 'react';
 
 
 let global = varaible();
 
 
 export default function ToolBox() {
-
+  
   function draw() {
     global.canvas.style.cursor = "url('https://img.icons8.com/FFFFFF/external-those-icons-lineal-color-those-icons/24/FF0C0C/external-cursor-selection-cursors-those-icons-lineal-color-those-icons-1.png'), auto"
     global.prevState = global.draw;
@@ -104,7 +105,6 @@ export default function ToolBox() {
   function openGithub(){
     window.open("https://github.com/ZadeAbhishek/infiboard");
   }
-
   return (
     <>
       <div className="strockInpu">
