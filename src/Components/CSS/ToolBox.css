@@ -1,20 +1,62 @@
-.dropup-center {
-    bottom: 1%;
-    left: 1%;
+.setting-menu {
+    height: 100%;
+    width: 0;
     position: fixed;
-    z-index: 99;
+    z-index: 105;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    text-align: center;
+    opacity: 0.9;
+}
+
+.setting-menu a {
+    padding: 8px 8px 8px 35px;
+    padding-bottom: 10px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+.setting-menu a:hover {
+    color: #f1f1f1;
+    cursor: pointer;
+}
+
+.setting-menu .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
 }
 
 .dropdown-menu {
     padding: 6%;
 }
 
-.btn-group-vertical {
-    top: 35%;
+.nav-logo {
+    height: 20%;
+    width: 20%;
+}
+
+.group-vertical {
+    justify-content: center;
+    align-items: center;
+    top: 5%;
     left: 1%;
-    padding: 10px;
+    padding: 5px;
     position: fixed;
     z-index: 99;
+    cursor: pointer;
+    /* change this to adjust in roatedd mode */
+    width: 0;
+    display: block;
 }
 
 .color-btn-grp {
@@ -23,15 +65,6 @@
     padding: 10px;
     position: fixed;
     z-index: 99;
-}
-
-.strockInpu {
-    top: 5%;
-    left: 1%;
-    padding: 10px;
-    position: fixed;
-    z-index: 99;
-    color: aliceblue;
 }
 
 .setting-li {
@@ -43,4 +76,219 @@
     position: fixed;
     bottom: 1%;
     right: 1%;
+}
+
+.menubutton {
+    background-color: white;
+    /* Green */
+    border: none;
+    color: black;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.menubutton:hover {
+    background-color: black;
+    /* Green */
+    color: white;
+    box-shadow: 0 12px 16px 0 rgba(225, 224, 224, 0.24), 0 17px 50px 0 rgba(172, 171, 171, 0.19);
+}
+
+.file {
+    content: 'Load Board';
+}
+
+
+/* Default styles for .color-picker */
+
+.color-picker {
+    position: fixed;
+    top: 9%;
+    right: 2%;
+    display: none;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    /* Ensure the color picker does not exceed the screen width */
+}
+
+.color-wheel {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    margin-bottom: 20px;
+    /* Add some spacing between the color wheel and color details */
+}
+
+.wheel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, red, yellow, lime, cyan, blue, magenta, red);
+    transform: rotate(-90deg);
+}
+
+.selector {
+    position: relative;
+    width: 15px;
+    height: 15px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.color-preview {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: #fff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.customRange1 {
+    position: relative;
+    padding: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    color: black;
+}
+
+.color-button {
+    position: relative;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.row-color-button {
+    padding: 10px;
+    align-items: center;
+}
+
+.color-button-toggler {
+    padding: 10px;
+    margin: 5px;
+}
+
+
+/* Media query for screens smaller than 768px (e.g., smartphones) */
+
+@media screen and (max-width: 768px) {
+    .color-picker {
+        padding: 20px;
+        height: 300px;
+        text-align: center;
+        overflow: scroll;
+        /* Adjust padding for smaller screens */
+    }
+    .color-wheel {
+        width: 150px;
+        /* Adjust size of color wheel for smaller screens */
+        height: 150px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .selector {
+        width: 10px;
+        /* Adjust size of selector for smaller screens */
+        height: 10px;
+    }
+    .color-preview {
+        width: 80px;
+        /* Adjust size of color preview for smaller screens */
+        height: 80px;
+    }
+    .strockInpu {
+        padding: 5px;
+        /* Adjust padding for smaller screens */
+    }
+    .menubutton {
+        background-color: white;
+        /* Green */
+        padding: 10px 10px;
+        font-size: 20px;
+        margin-left: 5px;
+    }
+    .group-vertical {
+        top: 85%;
+        right: 100%;
+        padding: 5px;
+        width: 500px;
+    }
+    #githubPage {
+        position: fixed;
+        top: 1%;
+        left: 1%;
+        width: 50px;
+        height: 50px;
+    }
+}
+
+#color-button-toggler-black {
+    background-color: #111;
+}
+
+#color-button-toggler-red {
+    background-color: red;
+}
+
+#color-button-toggler-green {
+    background-color: green;
+}
+
+#color-button-toggler-blue {
+    background-color: blue;
+}
+
+#color-button-toggler-orange {
+    background-color: orange;
+}
+
+#color-button-toggler-yellow {
+    background-color: yellow;
+}
+
+#color-button-toggler-pink {
+    background-color: pink;
+}
+
+#color-button-toggler-grey {
+    background-color: grey;
+}
+
+#color-button-toggler-white {
+    background-color: white;
+    border: thick double black;
+}
+
+
+/* Media query for tablets and larger smartphones */
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    /* Adjust styles for tablets and larger smartphones here */
+}
+
+
+/* Media query for small laptops and desktops */
+
+@media screen and (min-width: 1025px) and (max-width: 1366px) {
+    /* Adjust styles for small laptops and desktops here */
+}
+
+
+/* Media query for larger screens, such as desktop monitors */
+
+@media screen and (min-width: 1367px) {
+    /* Adjust styles for larger screens here */
 }
