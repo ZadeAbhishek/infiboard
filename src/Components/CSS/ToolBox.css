@@ -48,7 +48,7 @@
 .group-vertical {
     justify-content: center;
     align-items: center;
-    top: 10%;
+    top: 5%;
     left: 1%;
     padding: 5px;
     position: fixed;
@@ -88,6 +88,8 @@
     text-decoration: none;
     display: inline-block;
     font-size: 20px;
+    border-radius: 5px;
+    margin-bottom: 5px;
 }
 
 .menubutton:hover {
@@ -109,15 +111,11 @@
     top: 9%;
     right: 2%;
     display: none;
-    justify-content: center;
-    flex-direction: column;
-    /* Stack components vertically on small screens */
-    align-items: center;
     background-color: #fff;
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    max-width: 100%;
+    text-align: center;
     /* Ensure the color picker does not exceed the screen width */
 }
 
@@ -130,6 +128,7 @@
 }
 
 .wheel {
+    position: relative;
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -138,7 +137,7 @@
 }
 
 .selector {
-    position: absolute;
+    position: relative;
     width: 15px;
     height: 15px;
     border: 2px solid #fff;
@@ -147,6 +146,7 @@
 }
 
 .color-preview {
+    position: relative;
     width: 100px;
     height: 100px;
     background-color: white;
@@ -154,9 +154,12 @@
     margin-bottom: 10px;
     border: #fff;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .customRange1 {
+    position: relative;
     padding: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     color: black;
@@ -184,12 +187,17 @@
 @media screen and (max-width: 768px) {
     .color-picker {
         padding: 20px;
+        height: 300px;
+        text-align: center;
+        overflow: scroll;
         /* Adjust padding for smaller screens */
     }
     .color-wheel {
         width: 150px;
         /* Adjust size of color wheel for smaller screens */
         height: 150px;
+        margin-left: auto;
+        margin-right: auto;
     }
     .selector {
         width: 10px;
@@ -204,6 +212,26 @@
     .strockInpu {
         padding: 5px;
         /* Adjust padding for smaller screens */
+    }
+    .menubutton {
+        background-color: white;
+        /* Green */
+        padding: 10px 10px;
+        font-size: 20px;
+        margin-left: 5px;
+    }
+    .group-vertical {
+        top: 85%;
+        right: 100%;
+        padding: 5px;
+        width: 500px;
+    }
+    #githubPage {
+        position: fixed;
+        top: 1%;
+        left: 1%;
+        width: 50px;
+        height: 50px;
     }
 }
 
@@ -237,6 +265,11 @@
 
 #color-button-toggler-grey {
     background-color: grey;
+}
+
+#color-button-toggler-white {
+    background-color: white;
+    border: thick double black;
 }
 
 

@@ -239,8 +239,8 @@ export default function ToolBox() {
   }
 
   function togglepicker(){
-    if(document.getElementById("color-picker-id").style.display === "flex") document.getElementById("color-picker-id").style.display = "none"; 
-     else document.getElementById("color-picker-id").style.display = "flex";
+    if(document.getElementById("color-picker-id").style.display === "block") document.getElementById("color-picker-id").style.display = "none"; 
+     else document.getElementById("color-picker-id").style.display = "block";
    }
 
     const [strokeWidth, setstrokeWidth] = useState(2);
@@ -260,7 +260,7 @@ export default function ToolBox() {
   <path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828l6.879-6.879zm2.121.707a1 1 0 0 0-1.414 0L4.16 7.547l5.293 5.293 4.633-4.633a1 1 0 0 0 0-1.414l-3.879-3.879zM8.746 13.547 3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293l.16-.16z"/>
 </svg></button>
 
-<button onClick={togglepicker} type="button" className="menubutton"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-palette" viewBox="0 0 16 16">
+<button onClick={togglepicker} type="button" className="menubutton"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-palette" viewBox="0 0 16 16">
   <path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
   <path d="M16 8c0 3.15-1.866 2.585-3.567 2.07C11.42 9.763 10.465 9.473 10 10c-.603.683-.475 1.819-.351 2.92C9.826 14.495 9.996 16 8 16a8 8 0 1 1 8-8zm-8 7c.611 0 .654-.171.655-.176.078-.146.124-.464.07-1.119-.014-.168-.037-.37-.061-.591-.052-.464-.112-1.005-.118-1.462-.01-.707.083-1.61.704-2.314.369-.417.845-.578 1.272-.618.404-.038.812.026 1.16.104.343.077.702.186 1.025.284l.028.008c.346.105.658.199.953.266.653.148.904.083.991.024C14.717 9.38 15 9.161 15 8a7 7 0 1 0-7 7z"/>
 </svg></button>
@@ -302,8 +302,8 @@ export default function ToolBox() {
         </div>
       
       <div className="setting-menu" id="setting-menu-id">
-      <a href="#" class="dropdown-item"><img class="nav-logo" src={process.env.PUBLIC_URL + '/logo512.png'} /></a> 
-      <a href="javascript:void(0)" className="closebtn" onClick={closeNav}>&times;</a>
+      <a href="#" class="dropdown-item"><img className="nav-logo" src={process.env.PUBLIC_URL + '/logo512.png'} /></a> 
+      <a href="#" className="closebtn" onClick={closeNav}>&times;</a>
           <a onClick={saveImage} className="dropdown-item">Save Image</a>
           <a onClick={saveBoard} className="dropdown-item">Save Board</a>
           <a className="dropdown-item">
@@ -317,10 +317,8 @@ export default function ToolBox() {
             <div className="wheel"></div>
             <div className="selector"></div>
         </div>
-        <div className="color-details" id="color-details-id">
             <div className="color-preview"></div>
-            <label htmlFor="color-details-id" className="">Current Color</label>
-    </div>
+            <label htmlFor="color-preview" className="">Current Color</label>
 
        <div className='color-button'>
         <div className='row-color-button'>
@@ -340,7 +338,7 @@ export default function ToolBox() {
         <button className='color-button-toggler' id="color-button-toggler-blue" value={"blue"} onClick={updateColor}></button>
         </div>
         </div>
-        <label htmlFor="color-details-id" className="row-color-button">Basic Color</label>
+        <label className="row-color-button">Basic Color</label>
        </div>
 
         <input type="range" min='2' max='15' value={strokeWidth} className="form-range" id="customRange1" onChange={strokeChange}></input>
