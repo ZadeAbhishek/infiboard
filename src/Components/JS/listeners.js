@@ -32,7 +32,6 @@ export function mouseDown(e) {
     }
     // update cursor coordinates
     cancelAnimationFrame(global.raf);
-    global.Path2d = new Path2D();
     global.downTime = new Date().getTime();
     global.accX = 0;
     global.accY = 0;
@@ -50,11 +49,23 @@ export function mouseUp() {
     rightMouseDown = false;
     if ((global.draw === "DRAW" || global.draw === "ERASE") && global.currState.length > 0) {
         global.state++;
-        global.drawing.push({
-            type: global.draw,
-            state: global.state,
-            data: global.currState
-        });
+
+        // if laarge size is large we need to size the array into small size to make easy to render
+        const maxsizeChunk = 250;
+        const chuncks = [];
+
+        for (let i = 0; i < global.currState.length; i += maxsizeChunk) {
+            chuncks.push(global.currState.slice(i, i + maxsizeChunk));
+        }
+
+        for (let i = 0; i < chuncks.length; i++) {
+
+            global.drawing.push({
+                type: global.draw,
+                state: global.state,
+                data: chuncks[i],
+            });
+        }
     }
     global.currState = [];
     if (global.draw === "SQUARE" && (global.shapeX && global.shapeY)) {
@@ -69,7 +80,7 @@ export function mouseUp() {
         panMove(x1, y1, x0, y0);
     }
     global.draw = global.prevState;
-    redrawCanvas();
+    //redrawCanvas();
 }
 
 export function mouseMove(e) {
@@ -183,7 +194,7 @@ export function touchEnd(e) {
     singleTouche = false;
     doubleTouche = false;
     global.draw = global.prevState;
-    redrawCanvas();
+
 }
 
 export function touchMove(e) {
