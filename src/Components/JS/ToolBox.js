@@ -8,8 +8,6 @@ let global = varaible();
 let wheel = undefined;
 let selector = undefined;
 let colorPreview = undefined;
-let rgbInput = undefined;
-let hexInput = undefined;
 let hue = 0; // Initial hue value
 
 // Function to update the color based on the selector's position
@@ -22,7 +20,7 @@ function updateColor(color) {
     colorPreview.style.backgroundColor = hexColor;
     global.strokeStyle = hexColor;
     }
-    else if(color !== undefined && colorPreview != undefined){
+    else if(color !== undefined && colorPreview !== undefined){
     colorPreview.style.backgroundColor = color.target.value;
     global.strokeStyle = color.target.value;
     }
@@ -99,12 +97,6 @@ function rgbToHex(rgb) {
     return '#' + ((1 << 24) | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2]).toString(16).slice(1).toUpperCase();
 }
 
-// Convert HSL to RGB string (for input display)
-function hslToRgbString(h, s, l) {
-    const rgb = hslToRgb(h, s, l);
-    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-}
-
 
 
 export default function ToolBox() {
@@ -142,7 +134,6 @@ export default function ToolBox() {
   
   }
 
-  let togglePicker = false;
   
   function draw() {
     global.canvas.style.cursor = "url('https://img.icons8.com/FFFFFF/external-those-icons-lineal-color-those-icons/24/FF0C0C/external-cursor-selection-cursors-those-icons-lineal-color-those-icons-1.png'), auto"

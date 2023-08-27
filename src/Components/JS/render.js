@@ -20,7 +20,6 @@ export function redrawCanvas() {
             // Loop through the data points of the drawing
             for (let j = 0; j < global.drawing[i].data.length; j++) {
                 const line = global.drawing[i].data[j];
-                global.Path2d = new Path2D();
                 // Draw a line with specified attributes
                 drawline(
                     toscreenX(line.x0),
@@ -42,7 +41,6 @@ export function redrawCanvas() {
             // Loop through the data points of the eraser
             for (let j = 0; j < global.drawing[i].data.length; j++) {
                 const line = global.drawing[i].data[j];
-                global.Path2d = new Path2D();
                 // Draw an erased line with specified attributes
                 drawline(
                     toscreenX(line.x0),
@@ -78,25 +76,13 @@ export function reDrawShape(shape) {
         currHeight(shape.height)
     );
 
-    // Draw the outline of the rectangle using stroke
-    global.context.strokeRect(
-        toscreenX(shape.x),
-        toscreenY(shape.y),
-        currWidth(shape.width),
-        currHeight(shape.height)
-    );
+
 }
 
 export function drawShape() {
     global.context.beginPath();
     global.context.fillStyle = global.strokeStyle;
     global.context.fillRect(
-        global.downX,
-        global.downY,
-        global.shapeX - global.downX,
-        global.shapeY - global.downY
-    );
-    global.context.strokeRect(
         global.downX,
         global.downY,
         global.shapeX - global.downX,
@@ -169,11 +155,35 @@ export function trueWidth() {
     return global.canvas.clientWidth / global.scale;
 }
 
+//  function drawline(x0, y0, x1, y1, color, lineWidth) {
+//     global.context.strokeStyle = color;
+//     global.context.lineWidth = lineWidth;
+//     global.context.lineCap = 'round'
+//     global.context.lineJoin = 'round'
+//     global.context.beginPath();
+//     global.context.moveTo(x0, y0);
+//     global.context.lineTo(x1, y1);
+//     global.context.stroke();
+// }
+
 export function drawline(x0, y0, x1, y1, color, lineWidth) {
-    global.context.beginPath();
-    global.Path2d.moveTo(x0, y0);
-    global.Path2d.lineTo(x1, y1);
+    // Adjust the coordinates to align with whole pixels
+    x0 = Math.round(x0);
+    y0 = Math.round(y0);
+    x1 = Math.round(x1);
+    y1 = Math.round(y1);
+
+    // Set the stroke style and line properties
     global.context.strokeStyle = color;
     global.context.lineWidth = lineWidth;
-    global.context.stroke(global.Path2d);
+    global.context.lineCap = 'round';
+    global.context.lineJoin = 'round';
+
+    // Begin a new path and move to the adjusted starting point
+    global.context.beginPath();
+    global.context.moveTo(x0 + 0.5, y0 + 0.5); // Add 0.5 to align with the center of the pixel
+
+    // Draw a line to the adjusted ending point and stroke it
+    global.context.lineTo(x1 + 0.5, y1 + 0.5); // Add 0.5 to align with the center of the pixel
+    global.context.stroke();
 }
