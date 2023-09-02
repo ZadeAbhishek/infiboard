@@ -1,7 +1,9 @@
-import React, { Component } from "react";
+import React, { Component , useEffect } from "react";
 import "../CSS/Board.css";
 import Header from './Header'
 import ToolBox from './ToolBox'
+import * as Automerge from '@automerge/automerge'
+import io from "socket.io-client";
 
 class Stack {
     constructor() {
@@ -31,59 +33,61 @@ class Stack {
 
 
 export default class Board extends Component {
-    
+
     constructor(props){
         super(props);
-       this.global = {
-        projectName: 'untitled',
-        draw: 'HOLD',
-        prevState: 'HOLD',
-        focusCenter: false,
-        drawing: new Array(),
-        shapes:  new Array(),
-        cursorX: 0,
-        cursorY: 0,
-        prevcursorX: 0,
-        prevcursorY: 0,
-        downX: 0,
-        downY: 0,
-        offsetX: 0,
-        offsetY: 0,
-        scale: 1,
-        prevTouches: [null, null],
-        touch0x: 0,
-        touch0y: 0,
-        touch1x: 0,
-        touch1y: 0,
-        prevTouch0x: 0,
-        prevTouch0y: 0,
-        prevTouch1x: 0,
-        prevTouch1y: 0,
-        shapeX: 0,
-        shapeY: 0,
-        canvas: document.getElementById("board"),
-        strokeStyle: '#fff',
-        strokeWidth: 2,
-        boardColor: "#000000",
-        state: 0,
-        stack: new Stack(),
-        shape_index: 0,
-        offsetLeft: 0,
-        offsetTop: 0,
-        Path2d: null,
-        context: null,
-        rect: null,
-        velocity: null,
-        downTime: null,
-        accX: 0,
-        accY: 0,
-        raf: null,
-        currState: new Array(),
+        this.global = {
+            projectName: 'untitled',
+            draw: 'HOLD',
+            prevState: 'HOLD',
+            focusCenter: false,
+            drawing: undefined,
+            shapes:  new Array(),
+            cursorX: 0,
+            cursorY: 0,
+            prevcursorX: 0,
+            prevcursorY: 0,
+            downX: 0,
+            downY: 0,
+            offsetX: 0,
+            offsetY: 0,
+            scale: 1,
+            prevTouches: [null, null],
+            touch0x: 0,
+            touch0y: 0,
+            touch1x: 0,
+            touch1y: 0,
+            prevTouch0x: 0,
+            prevTouch0y: 0,
+            prevTouch1x: 0,
+            prevTouch1y: 0,
+            shapeX: 0,
+            shapeY: 0,
+            canvas: document.getElementById("board"),
+            strokeStyle: '#fff',
+            strokeWidth: 2,
+            boardColor: "#000000",
+            state: 0,
+            stack: new Stack(),
+            shape_index: 0,
+            offsetLeft: 0,
+            offsetTop: 0,
+            Path2d: null,
+            context: null,
+            rect: null,
+            velocity: null,
+            downTime: null,
+            accX: 0,
+            accY: 0,
+            raf: null,
+            currState: new Array(),
+            Sync_Drawing:undefined,
+            user_Id:undefined,
+            userName:prompt("Enter Name")||"USER",
+            users: new Array(),
+        
+        }
     }
-
-}
-
-
   componentDidMount(){
     this.global.canvas = document.getElementById("board");
     this.global.context = this.global.canvas.getContext("2d");
@@ -94,11 +98,6 @@ export default class Board extends Component {
         return false;
     };
     
-    this.Render.redrawCanvas();
-
-    window.addEventListener("resize", (e) => {
-        this.Render.redrawCanvas();
-    });
     this.global.canvas.addEventListener("mousedown", this.listners.mouseDown);
     this.global.canvas.addEventListener("mouseup", this.listners.mouseUp, false);
     this.global.canvas.addEventListener("mousemove", this.listners.mouseMove, false);
@@ -106,7 +105,62 @@ export default class Board extends Component {
     this.global.canvas.addEventListener("touchstart", this.listners.touchStart);
     this.global.canvas.addEventListener("touchend", this.listners.touchEnd);
     this.global.canvas.addEventListener("touchmove", this.listners.touchMove);
+
+    this.global.drawing = Automerge.init();
+    this.global.drawing.data = new Array();
+    this.global.user_Id = Automerge.getActorId(this.global.drawing);
+    this.socket.emit("new_user_joined",{username: this.global.userName ,userId:this.global.user_Id});
+    this.socket.on("new_user_joined_receive",(users)=>{
+        this.global.users.push(users);
+        alert(`${users.username} has Joined, Online:${this.global.users.length+1}`);
+        this.Socket_server.sync();
+    })
+    this.socket.on("drawing_state_change_receive",(ev)=> {
+        var uint8View = new Uint8Array(ev.data);
+        this.global.drawing = Automerge.merge(this.global.drawing,Automerge.load(uint8View));
+        this.Render.redrawCanvas();
+
+         
+    })
+    
+    this.socket.on("user_disconnected",(users)=> {
+        const pos = this.global.users.map(e => e.userId).indexOf(users.userId);
+        this.global.users.splice(pos, 1);
+        alert(`${users.username} is Disconnected, Total Online :${this.global.users.length+1}`);
+
+    })
+
+    this.Render.redrawCanvas();
+
+    window.addEventListener("resize", (e) => {
+        this.Render.redrawCanvas();
+    });
   }
+  
+
+  
+  socket  = io.connect("http://192.168.1.4:8080");
+
+  Socket_server = {
+    emitDrawing:(data)=>{
+       let new_Sync_Drawing = Automerge.change(this.global.drawing, syncChange => {
+        if (!syncChange.data) syncChange.data = new Array();
+        syncChange.data.push({drawing:data});
+    })
+
+    this.global.drawing = new_Sync_Drawing;
+
+    let binary = Automerge.save(this.global.drawing);
+
+    this.socket.emit("drawing_state_change",{data:binary});
+    },
+    sync:()=>{
+
+    let binary = Automerge.save(this.global.drawing);
+
+    this.socket.emit("drawing_state_change",{data:binary});
+    }
+}
 
   Render = {
     // Function to redraw the canvas
@@ -118,35 +172,35 @@ export default class Board extends Component {
     // Fill the canvas with the specified background color
     this.global.context.fillStyle = this.global.boardColor;
     this.global.context.fillRect(0, 0, this.global.canvas.width, this.global.canvas.height);
-
     // Loop through the drawing data and Render shapes
-    for (let i = 0; i < this.global.drawing.length; i++) {
+    for (let i = 0; i < this.global.drawing.data.length; i++) {
         // If the drawing is of type "DRAW"
-        if (this.global.drawing[i].type === "DRAW") {
+        if (this.global.drawing.data[i].drawing.type === "DRAW") {
             // Loop through the data points of the drawing
-            for (let j = 0; j < this.global.drawing[i].data.length; j++) {
-                const line = this.global.drawing[i].data[j];
+            for (let j = 0; j < this.global.drawing.data[i].drawing.data.length; j++) {
+                const line = this.global.drawing.data[i].drawing.data[j];
                 // Draw a line with specified attributes
                 this.Render.drawline(
                     this.Render.toscreenX(line.x0),
                     this.Render.toscreenY(line.y0),
                     this.Render.toscreenX(line.x1),
                     this.Render.toscreenY(line.y1),
-                    this.global.drawing[i].data[j].strokeStyle,
-                    this.global.drawing[i].data[j].lineWidth * this.global.scale
+                    this.global.drawing.data[i].drawing.data[j].strokeStyle,
+                    this.global.drawing.data[i].drawing.data[j].lineWidth * this.global.scale
                 );
             }
         }
         // If the drawing is of type "SQUARE"
-        if (this.global.drawing[i].type === "SQUARE") {
+        if (this.global.drawing.data[i].drawing.type === "SQUARE") {
+            
             // Redraw the square shape
-            this.Render.reDrawShape(this.global.drawing[i].data);
+            this.Render.reDrawShape(this.global.drawing.data[i].drawing.data);
         }
         // If the drawing is of type "ERASE"
-        if (this.global.drawing[i].type === "ERASE") {
+        if (this.global.drawing.data[i].drawing.type === "ERASE") {
             // Loop through the data points of the eraser
-            for (let j = 0; j < this.global.drawing[i].data.length; j++) {
-                const line = this.global.drawing[i].data[j];
+            for (let j = 0; j < this.global.drawing.data[i].drawing.data.length; j++) {
+                const line = this.global.drawing.data[i].drawing.data[j];
                 // Draw an erased line with specified attributes
                 this.Render.drawline(
                     this.Render.toscreenX(line.x0),
@@ -154,7 +208,7 @@ export default class Board extends Component {
                     this.Render.toscreenX(line.x1),
                     this.Render.toscreenY(line.y1),
                     this.global.boardColor,
-                    this.global.drawing[i].data[j].lineWidth * this.global.scale
+                    this.global.drawing.data[i].drawing.data[j].lineWidth * this.global.scale
                 );
             }
         }
@@ -186,13 +240,13 @@ export default class Board extends Component {
 },
    drawShape :() => {
     this.global.context.beginPath();
-    this.global.context.fillStyle = global.strokeStyle;
+    this.global.context.fillStyle = this.global.strokeStyle;
     this.global.context.fillRect(
         this.global.downX,
         this.global.downY,
-        this.global.shapeX - global.downX,
-        this.global.shapeY - global.downY
-    );
+        this.global.shapeX - this.global.downX,
+        this.global.shapeY - this.global.downY
+    );    
 },
  
  saveReRender : (prevx, prevy, x, y) => {
@@ -209,7 +263,8 @@ export default class Board extends Component {
    pushShape :()=> {
     // x /scale = offset
     this.global.state++;
-    this.global.drawing.push({
+
+    this.Socket_server.emitDrawing({
         type: this.global.draw,
         state: this.global.state,
         data: {
@@ -219,7 +274,8 @@ export default class Board extends Component {
             height: (this.global.shapeY - this.global.downY) / this.global.scale,
             color: this.global.strokeStyle,
         }
-    });
+    })
+
     this.global.draw = "HOLD";
     this.Render.redrawCanvas();
     this.global.downX = 0;
@@ -282,6 +338,8 @@ drawline :(x0, y0, x1, y1, color, lineWidth) => {
 }
   }
 
+
+
 listners = {
     singleTouche : false,
     doubleTouche : false,
@@ -304,8 +362,8 @@ listners = {
     }
     this.global.prevState = this.global.draw;
     let index = 0;
-    for (let shape of this.global.drawing) {
-        if (shape.type === "SQUARE" && this.listners.iS_on_Shape(e.clientX, e.clientY, shape)) {
+    for (let shape in this.global.drawing.data) {
+        if (this.global.drawing.data[shape].drawing.type === "SQUARE" && this.listners.iS_on_Shape(e.clientX, e.clientY, this.global.drawing.data[shape].drawing)) {
             this.global.draw = "OnShape";
             this.global.shape_index = index;
         }
@@ -330,16 +388,25 @@ listners = {
     this.listners.rightMouseDown = false;
     if ((this.global.draw === "DRAW" || this.global.draw === "ERASE") && this.global.currState.length > 0) {
         this.global.state++;
-        this.global.drawing.push({
-                type: this.global.draw,
-                state: this.global.state,
-                data: this.global.currState,
-            });
+        this.Socket_server.emitDrawing({
+            type: this.global.draw,
+            state: this.global.state,
+            data: this.global.currState,
+        })
     }
     this.global.currState = [];
     if (this.global.draw === "SQUARE" && (this.global.shapeX && this.global.shapeY)) {
         this.Render.pushShape();
     }
+
+    if (this.global.draw === "OnShape") {
+
+        this.Socket_server.sync();
+    }
+    
+    // if(this.global.draw != "PAN"){
+    //     this.Socket_server.emitDrawing(this.global.drawing);
+    // }
 
     if (this.global.draw === "PAN") {
         let x1 = this.global.cursorX;
@@ -373,9 +440,9 @@ listners = {
         }
 
         if (this.global.draw === "OnShape") {
-            this.global.drawing[this.global.shape_index].data.x +=
+            this.global.drawing.data[this.global.shape_index].drawing.data.x +=
                 (this.global.cursorX - this.global.prevcursorX) / this.global.scale;
-                this.global.drawing[this.global.shape_index].data.y +=
+                this.global.drawing.data[this.global.shape_index].drawing.data.y +=
                 (this.global.cursorY - this.global.prevcursorY) / this.global.scale;
             this.Render.redrawCanvas();
         }
@@ -596,9 +663,12 @@ touchMove:(e) => {
   render() {
     return (
         <>
+
+        < canvas id = "board" > Board </canvas> 
         <Header global = {this.global} />
         <ToolBox global = {this.global} Render = {this.Render}/>
-        < canvas id = "board" > Board </canvas> </>
+        
+        </>
     )
   }
 }
