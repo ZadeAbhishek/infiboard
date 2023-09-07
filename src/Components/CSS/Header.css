@@ -1,5 +1,14 @@
 #projectName {
     top: 1%;
+    right: 50%;
+    padding: 10px;
+    position: fixed;
+    z-index: 99;
+    color: aliceblue;
+}
+
+#onlineUserCount {
+    top: 1%;
     right: 1%;
     padding: 10px;
     position: fixed;

@@ -2,7 +2,7 @@ import '../CSS/ToolBox.css'
 import { useEffect, useState} from 'react';
 
 
-const ToolBox = ({global , Render}) => {
+const ToolBox = ({global , Render , user}) => {
 let wheel = undefined;
 let selector = undefined;
 let colorPreview = undefined;
@@ -197,7 +197,7 @@ function saveBoard() {
   const blob = new Blob([JSON.stringify(global.drawing, null, 3)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${global.projectName}.json`;
+  a.download = `${user.projectName}.json`;
   a.click();
 }
 
@@ -206,7 +206,7 @@ function saveImage() {
   const dataUrl = canvas.toDataURL("image/png");
   const anchor = document.createElement('a');
   anchor.href = dataUrl;
-  anchor.download = `${global.projectName}.png`;
+  anchor.download = `${user.projectName}.png`;
   anchor.click();
 }
 
