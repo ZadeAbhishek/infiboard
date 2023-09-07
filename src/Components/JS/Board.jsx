@@ -37,7 +37,6 @@ export default class Board extends Component {
     constructor(props){
         super(props);
         this.global = {
-            projectName: 'untitled',
             draw: 'HOLD',
             prevState: 'HOLD',
             focusCenter: false,
@@ -82,10 +81,16 @@ export default class Board extends Component {
             raf: null,
             currState: new Array(),
             Sync_Drawing:undefined,
+
+        
+        }
+
+        this.user = {
+            projectName: 'untitled',
             user_Id:undefined,
             userName:prompt("Enter Name")||"USER",
             users: new Array(),
-        
+            total_users:0,
         }
     }
   componentDidMount(){
@@ -108,26 +113,33 @@ export default class Board extends Component {
 
     this.global.drawing = Automerge.init();
     this.global.drawing.data = new Array();
-    this.global.user_Id = Automerge.getActorId(this.global.drawing);
-    this.socket.emit("new_user_joined",{username: this.global.userName ,userId:this.global.user_Id});
+    this.user.user_Id = Automerge.getActorId(this.global.drawing);
+    this.socket.emit("new_user_joined",{username: this.user.userName ,userId:this.user.user_Id});
     this.socket.on("new_user_joined_receive",(users)=>{
-        this.global.users.push(users);
-        alert(`${users.username} has Joined, Online:${this.global.users.length+1}`);
+        this.user.users.push(users);
+        alert(`${users.username} has Joined`);
         this.Socket_server.sync();
     })
     this.socket.on("drawing_state_change_receive",(ev)=> {
         var uint8View = new Uint8Array(ev.data);
         this.global.drawing = Automerge.merge(this.global.drawing,Automerge.load(uint8View));
+        console.log(this.global.drawing.data);
         this.Render.redrawCanvas();
 
          
     })
     
     this.socket.on("user_disconnected",(users)=> {
-        const pos = this.global.users.map(e => e.userId).indexOf(users.userId);
-        this.global.users.splice(pos, 1);
-        alert(`${users.username} is Disconnected, Total Online :${this.global.users.length+1}`);
+        const pos = this.user.users.map(e => e.userId).indexOf(users.userId);
+        this.user.users.splice(pos, 1);
+        this.user.total_users -= 1;
+        alert(`${users.username} is Disconnected`);
 
+    })
+
+    this.socket.on("sync_user_receive",(user)=> {
+         this.user.total_users = Math.max(this.user.total_users,user.users);
+         console.log(this.user.total_users);
     })
 
     this.Render.redrawCanvas();
@@ -159,6 +171,7 @@ export default class Board extends Component {
     let binary = Automerge.save(this.global.drawing);
 
     this.socket.emit("drawing_state_change",{data:binary});
+    this.socket.emit("sync_users",{users:this.user.users.length});
     }
 }
 
@@ -400,8 +413,15 @@ listners = {
     }
 
     if (this.global.draw === "OnShape") {
+   
+     //      this.Socket_server.sync();
+                    let new_Sync_Drawing = Automerge.change(Automerge.clone(this.global.drawing), syncChange => {
+                        syncChange.data[this.global.shape_index].drawing.data.x = this.global.drawing.data[this.global.shape_index].drawing.data.x;
+                        syncChange.data[this.global.shape_index].drawing.data.y = this.global.drawing.data[this.global.shape_index].drawing.data.y;
+                })
+               let binary = Automerge.save(new_Sync_Drawing);
 
-        this.Socket_server.sync();
+                this.socket.emit("drawing_state_change",{data:binary}); 
     }
     
     // if(this.global.draw != "PAN"){
@@ -444,6 +464,8 @@ listners = {
                 (this.global.cursorX - this.global.prevcursorX) / this.global.scale;
                 this.global.drawing.data[this.global.shape_index].drawing.data.y +=
                 (this.global.cursorY - this.global.prevcursorY) / this.global.scale;
+
+
             this.Render.redrawCanvas();
         }
         if (this.global.draw === "PAN") {
@@ -489,12 +511,14 @@ touchStart :(e) => {
     }
     this.global.prevState = this.global.draw;
     let index = 0;
-    for (let shape of this.global.drawing) {
-        if (this.listners.iS_on_Shape(e.touches[0].clientX, e.touches[0].clientY, shape)) {
+    for (let shape in this.global.drawing.data) {
+        if (this.global.drawing.data[shape].drawing.type === "SQUARE" && this.listners.iS_on_Shape(e.touches[0].clientX, e.touches[0].clientY, shape)) {
             this.global.draw = "OnShape";
             this.global.shape_index = index;
+            alert(this.global.shape_index);
         }
         index++;
+
     }
     cancelAnimationFrame(this.global.raf);
     this.global.downTime = new Date().getTime();
@@ -526,6 +550,18 @@ touchEnd :(e) => {
     if (this.global.draw === "SQUARE" && (this.global.shapeX && this.global.shapeY)) {
         this.Render.pushShape();
     }
+
+    if (this.global.draw === "OnShape") {
+   
+        //      this.Socket_server.sync();
+                       let new_Sync_Drawing = Automerge.change(Automerge.clone(this.global.drawing), syncChange => {
+                           syncChange.data[this.global.shape_index].drawing.data.x = this.global.drawing.data[this.global.shape_index].drawing.data.x;
+                           syncChange.data[this.global.shape_index].drawing.data.y = this.global.drawing.data[this.global.shape_index].drawing.data.y;
+                   })
+                  let binary = Automerge.save(new_Sync_Drawing);
+   
+                   this.socket.emit("drawing_state_change",{data:binary}); 
+       }
     this.listners.singleTouche = false;
     this.listners.doubleTouche = false;
     this.global.draw = this.global.prevState;
@@ -563,10 +599,12 @@ touchMove:(e) => {
             this.global.shapeY = this.global.touch0y;
             this.Render.redrawCanvas();
         }
+        alert(this.global.draw);
         if (this.global.draw === "OnShape") {
-            this.global.drawing[this.global.shape_index].data.x +=
+            alert(this.global.shape_index);
+            this.global.drawing.data[this.global.shape_index].drawing.data.x +=
                 (this.global.touch0x - this.global.prevTouch0x) / this.global.scale;
-                this.global.drawing[this.global.shape_index].data.y +=
+                this.global.drawing.data[this.global.shape_index].drawing.data.y +=
                 (this.global.touch0y - this.global.prevTouch0y) / this.global.scale;
             this.Render.redrawCanvas();
         }
@@ -665,8 +703,8 @@ touchMove:(e) => {
         <>
 
         < canvas id = "board" > Board </canvas> 
-        <Header global = {this.global} />
-        <ToolBox global = {this.global} Render = {this.Render}/>
+        <Header global = {this.user} />
+        <ToolBox global = {this.global} Render = {this.Render} user = {this.user}/>
         
         </>
     )

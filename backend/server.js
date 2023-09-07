@@ -28,8 +28,11 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("drawing_state_change_receive", data);
     })
 
-    socket.on("disconnect", () => {
+    socket.on("sync_users", (data) => {
+        socket.broadcast.emit("sync_user_receive", data);
+    })
 
+    socket.on("disconnect", () => {
         const pos = users.map(e => e.socket).indexOf(socket);
         let curr_user = users[pos];
         users.splice(pos, 1);

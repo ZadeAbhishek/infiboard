@@ -5,7 +5,7 @@ import '../CSS/Header.css'
 const Header = (props) => {
   return (
     <>
-    <div id="projectName">{props.global.userName}</div>
+    <div id="projectName">{props.total_users}</div>
     </>
   )
 }
