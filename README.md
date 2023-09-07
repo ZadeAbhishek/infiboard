@@ -64,5 +64,6 @@ docker-compose up
 docker-compose stop
 ```
 
-
-
+# CRDT theory
+![IMG1](./public/CRDT_img_1.jpg)
+![IMG2](./public/CRDT_img_2.jpg)
